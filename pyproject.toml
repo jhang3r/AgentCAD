@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cad-agent-environment"
+version = "0.1.0"
+description = "AI Agent CAD Environment for geometric operations practice"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    {name = "Multi-Agent System", email = "noreply@example.com"}
+]
+keywords = ["cad", "geometry", "agents", "occt", "constraints"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+dependencies = [
+    "build123d>=0.5.0",
+    "ezdxf>=1.3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-benchmark>=4.0.0",
+    "ruff>=0.1.0",
+    "black>=23.0.0",
+]
+
+[project.scripts]
+cad-cli = "src.agent_interface.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "."}
+packages = [
+    "src",
+    "src.cad_kernel",
+    "src.constraint_solver",
+    "src.operations",
+    "src.file_io",
+    "src.file_io.validation",
+    "src.agent_interface",
+    "src.persistence",
+    "src.utils",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+select = ["E", "F", "W", "I", "N", "UP", "S", "B", "A", "C4", "DTZ", "T10", "EM", "ISC", "ICN", "PIE", "PT", "Q", "RSE", "RET", "SIM", "TID", "TCH", "ARG", "PTH", "PD", "PGH", "PL", "TRY", "NPY", "RUF"]
+ignore = ["S101", "PLR0913", "TRY003"]
+
+[tool.ruff.per-file-ignores]
+"tests/**/*.py" = ["S101", "PLR2004"]
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]

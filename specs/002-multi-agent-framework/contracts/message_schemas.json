@@ -1,0 +1,460 @@
+{
+  "message_schemas": {
+    "request": {
+      "description": "Agent requests assistance, validation, or information from another agent",
+      "content_schema": {
+        "type": "object",
+        "required": ["request_type"],
+        "properties": {
+          "request_type": {
+            "type": "string",
+            "enum": [
+              "validate_component",
+              "provide_dimensions",
+              "check_compatibility",
+              "request_rework",
+              "query_status"
+            ]
+          },
+          "component_id": {
+            "type": "string",
+            "description": "Entity or workspace ID relevant to request"
+          },
+          "validation_criteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specific checks requested (for validate_component)"
+          },
+          "dimension_requirements": {
+            "type": "object",
+            "description": "Required dimensions (for provide_dimensions)"
+          },
+          "compatibility_target": {
+            "type": "string",
+            "description": "Component to check compatibility against"
+          },
+          "rework_reason": {
+            "type": "string",
+            "description": "Explanation of why rework is needed"
+          },
+          "additional_context": {
+            "type": "object",
+            "description": "Any other relevant information"
+          }
+        }
+      },
+      "examples": [
+        {
+          "message_type": "request",
+          "content": {
+            "request_type": "validate_component",
+            "component_id": "entity_housing_123",
+            "validation_criteria": ["check_dimensions", "check_constraints", "check_topology"],
+            "additional_context": {
+              "expected_volume": 160000.0,
+              "expected_surface_area": 24800.0
+            }
+          }
+        },
+        {
+          "message_type": "request",
+          "content": {
+            "request_type": "check_compatibility",
+            "component_id": "entity_lid_456",
+            "compatibility_target": "entity_housing_123",
+            "additional_context": {
+              "interface_type": "mating_surface",
+              "tolerance": 0.1
+            }
+          }
+        },
+        {
+          "message_type": "request",
+          "content": {
+            "request_type": "request_rework",
+            "component_id": "entity_bracket_789",
+            "rework_reason": "Mounting holes do not align with housing pattern",
+            "additional_context": {
+              "expected_hole_spacing": 50.0,
+              "actual_hole_spacing": 45.0
+            }
+          }
+        }
+      ]
+    },
+    "response": {
+      "description": "Agent responds to a request from another agent",
+      "content_schema": {
+        "type": "object",
+        "required": ["request_id", "status"],
+        "properties": {
+          "request_id": {
+            "type": "string",
+            "description": "Original message_id being responded to"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["success", "failure", "partial", "needs_clarification"]
+          },
+          "validation_results": {
+            "type": "object",
+            "description": "Results for validate_component request"
+          },
+          "dimension_data": {
+            "type": "object",
+            "description": "Dimension information for provide_dimensions request"
+          },
+          "compatibility_assessment": {
+            "type": "object",
+            "description": "Compatibility check results"
+          },
+          "rework_completed": {
+            "type": "boolean",
+            "description": "Whether rework was completed successfully"
+          },
+          "error_message": {
+            "type": "string",
+            "description": "Error details if status is failure"
+          },
+          "clarification_needed": {
+            "type": "string",
+            "description": "What needs to be clarified if status is needs_clarification"
+          }
+        }
+      },
+      "examples": [
+        {
+          "message_type": "response",
+          "content": {
+            "request_id": "msg_validate_001",
+            "status": "success",
+            "validation_results": {
+              "check_dimensions": "pass",
+              "check_constraints": "pass",
+              "check_topology": "pass",
+              "details": {
+                "volume": 160250.5,
+                "surface_area": 24795.3,
+                "entity_count": 12
+              }
+            }
+          }
+        },
+        {
+          "message_type": "response",
+          "content": {
+            "request_id": "msg_compat_002",
+            "status": "failure",
+            "compatibility_assessment": {
+              "interface_matches": false,
+              "gap_distance": 2.5,
+              "overlap_detected": false
+            },
+            "error_message": "Lid surface does not align with housing - 2.5mm gap detected"
+          }
+        },
+        {
+          "message_type": "response",
+          "content": {
+            "request_id": "msg_rework_003",
+            "status": "success",
+            "rework_completed": true
+          }
+        }
+      ]
+    },
+    "broadcast": {
+      "description": "Agent announces status update or event to all other agents",
+      "content_schema": {
+        "type": "object",
+        "required": ["announcement"],
+        "properties": {
+          "announcement": {
+            "type": "string",
+            "enum": [
+              "workspace_merge_complete",
+              "component_ready",
+              "task_completed",
+              "error_occurred",
+              "status_update"
+            ]
+          },
+          "merged_workspace": {
+            "type": "string",
+            "description": "Target workspace for merge (workspace_merge_complete)"
+          },
+          "source_workspaces": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Source workspaces merged (workspace_merge_complete)"
+          },
+          "component_id": {
+            "type": "string",
+            "description": "Component that is ready (component_ready)"
+          },
+          "task_id": {
+            "type": "string",
+            "description": "Task that was completed (task_completed)"
+          },
+          "error_details": {
+            "type": "object",
+            "description": "Error information (error_occurred)"
+          },
+          "status_info": {
+            "type": "object",
+            "description": "Current status details (status_update)"
+          }
+        }
+      },
+      "examples": [
+        {
+          "message_type": "broadcast",
+          "content": {
+            "announcement": "workspace_merge_complete",
+            "merged_workspace": "ws_main",
+            "source_workspaces": ["ws_housing", "ws_lid", "ws_supports"],
+            "status_info": {
+              "total_entities": 45,
+              "conflicts_resolved": 0
+            }
+          }
+        },
+        {
+          "message_type": "broadcast",
+          "content": {
+            "announcement": "component_ready",
+            "component_id": "entity_housing_123",
+            "status_info": {
+              "validation_status": "passed",
+              "ready_for_integration": true
+            }
+          }
+        },
+        {
+          "message_type": "broadcast",
+          "content": {
+            "announcement": "task_completed",
+            "task_id": "task_create_housing",
+            "status_info": {
+              "duration_seconds": 12.5,
+              "operations_executed": 8,
+              "entities_created": 15
+            }
+          }
+        },
+        {
+          "message_type": "broadcast",
+          "content": {
+            "announcement": "error_occurred",
+            "error_details": {
+              "error_type": "CONSTRAINT_SOLVER_FAILURE",
+              "affected_entities": ["line_1", "line_2"],
+              "recovery_action": "reverting to pre-constraint state"
+            }
+          }
+        }
+      ]
+    },
+    "error": {
+      "description": "Agent reports an error condition to another agent",
+      "content_schema": {
+        "type": "object",
+        "required": ["error_code", "error_message"],
+        "properties": {
+          "error_code": {
+            "type": "string",
+            "enum": [
+              "ROLE_VIOLATION",
+              "OPERATION_FAILED",
+              "INVALID_PARAMETERS",
+              "WORKSPACE_ERROR",
+              "ENTITY_NOT_FOUND",
+              "CONSTRAINT_ERROR",
+              "CLI_SUBPROCESS_ERROR",
+              "TIMEOUT",
+              "UNKNOWN_ERROR"
+            ]
+          },
+          "error_message": {
+            "type": "string",
+            "description": "Human-readable error description"
+          },
+          "operation": {
+            "type": "string",
+            "description": "Operation that failed"
+          },
+          "parameters": {
+            "type": "object",
+            "description": "Parameters passed to failed operation"
+          },
+          "stack_trace": {
+            "type": "string",
+            "description": "Full error stack trace (optional)"
+          },
+          "recovery_suggestions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Suggested actions to recover from error"
+          }
+        }
+      },
+      "examples": [
+        {
+          "message_type": "error",
+          "content": {
+            "error_code": "ROLE_VIOLATION",
+            "error_message": "Cannot execute solid.extrude - designer role does not permit solid modeling operations",
+            "operation": "solid.extrude",
+            "parameters": {
+              "entity_id": "circle_1",
+              "distance": 20.0
+            },
+            "recovery_suggestions": [
+              "Assign task to agent with modeler role",
+              "Create new modeler agent to execute operation"
+            ]
+          }
+        },
+        {
+          "message_type": "error",
+          "content": {
+            "error_code": "OPERATION_FAILED",
+            "error_message": "Boolean union operation failed - overlapping geometry causes invalid topology",
+            "operation": "solid.boolean",
+            "parameters": {
+              "operation": "union",
+              "entity_a": "solid_1",
+              "entity_b": "solid_2"
+            },
+            "recovery_suggestions": [
+              "Check entity geometry for degeneracies",
+              "Simplify input solids before boolean operation",
+              "Use different boolean approach (subtract then union)"
+            ]
+          }
+        },
+        {
+          "message_type": "error",
+          "content": {
+            "error_code": "CLI_SUBPROCESS_ERROR",
+            "error_message": "JSON-RPC CLI subprocess timed out after 10 seconds",
+            "operation": "workspace.merge",
+            "parameters": {
+              "source_workspace": "ws_complex",
+              "target_workspace": "ws_main"
+            },
+            "recovery_suggestions": [
+              "Increase subprocess timeout for complex operations",
+              "Break workspace into smaller chunks before merging",
+              "Check for infinite loops in constraint solver"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "message_flow_patterns": {
+    "request_response": {
+      "description": "Agent A requests validation from Agent B, Agent B responds with results",
+      "sequence": [
+        {
+          "from": "modeler_agent",
+          "to": "validator_agent",
+          "message_type": "request",
+          "content": {
+            "request_type": "validate_component",
+            "component_id": "entity_housing"
+          }
+        },
+        {
+          "from": "validator_agent",
+          "to": "modeler_agent",
+          "message_type": "response",
+          "content": {
+            "request_id": "msg_001",
+            "status": "success",
+            "validation_results": {"all_checks": "pass"}
+          }
+        }
+      ]
+    },
+    "broadcast_notification": {
+      "description": "Integrator agent announces merge completion to all agents",
+      "sequence": [
+        {
+          "from": "integrator_agent",
+          "to": "broadcast",
+          "message_type": "broadcast",
+          "content": {
+            "announcement": "workspace_merge_complete",
+            "merged_workspace": "ws_main"
+          }
+        }
+      ]
+    },
+    "error_recovery": {
+      "description": "Agent encounters error, notifies controller and suggests recovery",
+      "sequence": [
+        {
+          "from": "modeler_agent",
+          "to": "controller",
+          "message_type": "error",
+          "content": {
+            "error_code": "OPERATION_FAILED",
+            "error_message": "Boolean operation failed",
+            "recovery_suggestions": ["retry", "simplify geometry"]
+          }
+        }
+      ]
+    },
+    "collaborative_feedback_loop": {
+      "description": "Designer creates component, validator checks it, designer revises based on feedback",
+      "sequence": [
+        {
+          "from": "designer_agent",
+          "to": "validator_agent",
+          "message_type": "request",
+          "content": {
+            "request_type": "validate_component",
+            "component_id": "sketch_001"
+          }
+        },
+        {
+          "from": "validator_agent",
+          "to": "designer_agent",
+          "message_type": "response",
+          "content": {
+            "request_id": "msg_002",
+            "status": "failure",
+            "validation_results": {"dimension_check": "fail"}
+          }
+        },
+        {
+          "from": "designer_agent",
+          "to": "validator_agent",
+          "message_type": "request",
+          "content": {
+            "request_type": "validate_component",
+            "component_id": "sketch_001_revised"
+          }
+        },
+        {
+          "from": "validator_agent",
+          "to": "designer_agent",
+          "message_type": "response",
+          "content": {
+            "request_id": "msg_003",
+            "status": "success",
+            "validation_results": {"all_checks": "pass"}
+          }
+        }
+      ]
+    }
+  }
+}

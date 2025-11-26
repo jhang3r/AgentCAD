@@ -1,0 +1,223 @@
+{
+  "role_templates": [
+    {
+      "name": "designer",
+      "description": "2D geometry creation specialist - creates points, lines, circles, arcs, and 2D sketches",
+      "allowed_operations": [
+        "entity.create_point",
+        "entity.create_line",
+        "entity.create_circle",
+        "entity.create_arc",
+        "entity.list",
+        "entity.query",
+        "workspace.list",
+        "agent.metrics"
+      ],
+      "forbidden_operations": [
+        "solid.extrude",
+        "solid.revolve",
+        "solid.boolean",
+        "constraint.apply",
+        "workspace.merge",
+        "workspace.resolve_conflict",
+        "file.delete"
+      ],
+      "example_tasks": [
+        "Create 2D sketch of mounting bracket profile",
+        "Draw circle pattern for bolt holes",
+        "Design 2D cross-section for extrusion",
+        "Create reference geometry for assembly alignment"
+      ]
+    },
+    {
+      "name": "modeler",
+      "description": "3D solid modeling specialist - creates 3D solids through extrusion, revolution, and boolean operations",
+      "allowed_operations": [
+        "entity.create_point",
+        "entity.create_line",
+        "entity.create_circle",
+        "solid.extrude",
+        "solid.revolve",
+        "solid.boolean",
+        "entity.list",
+        "entity.query",
+        "workspace.list",
+        "agent.metrics",
+        "file.export"
+      ],
+      "forbidden_operations": [
+        "constraint.apply",
+        "workspace.merge",
+        "workspace.resolve_conflict",
+        "file.delete"
+      ],
+      "example_tasks": [
+        "Extrude 2D sketch into 3D housing",
+        "Create cylindrical shaft via revolution",
+        "Union multiple solid components",
+        "Subtract mounting holes from base plate",
+        "Export solid model to STL for visualization"
+      ]
+    },
+    {
+      "name": "constraint_solver",
+      "description": "Geometric constraint specialist - applies and solves constraints like distance, angle, parallel, perpendicular",
+      "allowed_operations": [
+        "constraint.apply",
+        "constraint.status",
+        "entity.list",
+        "entity.query",
+        "workspace.list",
+        "agent.metrics"
+      ],
+      "forbidden_operations": [
+        "entity.create_point",
+        "entity.create_line",
+        "entity.create_circle",
+        "solid.extrude",
+        "solid.boolean",
+        "workspace.merge",
+        "file.delete",
+        "file.export"
+      ],
+      "example_tasks": [
+        "Apply distance constraint between mounting holes",
+        "Constrain lines to be parallel",
+        "Add angle constraints for bracket geometry",
+        "Solve constraint system and update entity positions",
+        "Verify all constraints are satisfied"
+      ]
+    },
+    {
+      "name": "validator",
+      "description": "Read-only verification specialist - queries entities, validates designs, checks requirements without modifications",
+      "allowed_operations": [
+        "entity.list",
+        "entity.query",
+        "workspace.list",
+        "agent.metrics",
+        "constraint.status"
+      ],
+      "forbidden_operations": [
+        "entity.create_point",
+        "entity.create_line",
+        "entity.create_circle",
+        "solid.extrude",
+        "solid.boolean",
+        "constraint.apply",
+        "workspace.merge",
+        "workspace.resolve_conflict",
+        "file.export",
+        "file.import",
+        "file.delete"
+      ],
+      "example_tasks": [
+        "Verify all required entities exist in design",
+        "Check that dimensions match specification",
+        "Validate geometric constraints are satisfied",
+        "Confirm assembly has all necessary components",
+        "Report entities with invalid properties"
+      ]
+    },
+    {
+      "name": "optimizer",
+      "description": "Design optimization specialist - simplifies geometry, reduces entity count, improves topology",
+      "allowed_operations": [
+        "entity.list",
+        "entity.query",
+        "entity.create_point",
+        "entity.create_line",
+        "entity.create_circle",
+        "solid.extrude",
+        "solid.boolean",
+        "workspace.list",
+        "agent.metrics",
+        "file.export"
+      ],
+      "forbidden_operations": [
+        "constraint.apply",
+        "workspace.merge",
+        "workspace.resolve_conflict",
+        "file.delete"
+      ],
+      "example_tasks": [
+        "Reduce number of entities while preserving design intent",
+        "Simplify boolean operation tree",
+        "Optimize topology for manufacturability",
+        "Merge redundant geometric features",
+        "Improve mesh quality for export"
+      ]
+    },
+    {
+      "name": "integrator",
+      "description": "Workspace management specialist - merges workspaces, resolves conflicts, coordinates multi-agent collaboration",
+      "allowed_operations": [
+        "workspace.create",
+        "workspace.list",
+        "workspace.merge",
+        "workspace.resolve_conflict",
+        "entity.list",
+        "entity.query",
+        "agent.metrics",
+        "file.export",
+        "file.import"
+      ],
+      "forbidden_operations": [
+        "entity.create_point",
+        "entity.create_line",
+        "entity.create_circle",
+        "solid.extrude",
+        "solid.boolean",
+        "constraint.apply",
+        "file.delete"
+      ],
+      "example_tasks": [
+        "Merge housing, lid, and supports workspaces into main assembly",
+        "Resolve entity ID conflicts during workspace merge",
+        "Apply conflict resolution strategy (keep_source, keep_target, manual_merge)",
+        "Export final integrated assembly",
+        "Import external CAD components for integration"
+      ]
+    }
+  ],
+  "role_compatibility_matrix": {
+    "description": "Which roles can work together effectively in collaborative scenarios",
+    "compatible_pairs": [
+      ["designer", "modeler"],
+      ["designer", "constraint_solver"],
+      ["modeler", "validator"],
+      ["modeler", "optimizer"],
+      ["optimizer", "validator"],
+      ["integrator", "any"]
+    ],
+    "workflow_patterns": {
+      "sequential_design_chain": ["designer", "constraint_solver", "modeler", "validator"],
+      "parallel_component_creation": ["modeler", "modeler", "modeler", "integrator"],
+      "iterative_refinement": ["modeler", "validator", "optimizer", "validator"]
+    }
+  },
+  "operation_reference": {
+    "description": "Complete list of CAD JSON-RPC CLI operations (from 001-cad-environment)",
+    "operations": [
+      "entity.create_point",
+      "entity.create_line",
+      "entity.create_circle",
+      "entity.create_arc",
+      "entity.list",
+      "entity.query",
+      "solid.extrude",
+      "solid.revolve",
+      "solid.boolean",
+      "constraint.apply",
+      "constraint.status",
+      "workspace.create",
+      "workspace.list",
+      "workspace.merge",
+      "workspace.resolve_conflict",
+      "file.import",
+      "file.export",
+      "file.delete",
+      "agent.metrics"
+    ]
+  }
+}

@@ -31,7 +31,18 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+Verify compliance with `.specify/memory/constitution.md` principles:
+
+- [ ] **Multi-Agent Architecture**: Feature plan involves coordination across specification, planning, task generation, and implementation agents
+- [ ] **No Mocks/Stubs**: Implementation plan specifies real dependencies (databases, APIs, services) - no mocked interfaces
+- [ ] **Verifiable Completion**: Each task has clear, binary completion criteria (compiles, tests pass, integrated, deployable)
+- [ ] **Test Reality**: Test strategy focuses on contract tests, integration tests, and real user journeys (not mocked behavior)
+- [ ] **Documentation-Driven**: Plan identifies third-party tools requiring documentation review before implementation
+- [ ] **Live Error Reporting**: Development environment includes hot reload and error streaming to AI agent
+- [ ] **Library-First**: Feature designed as standalone library with CLI interface (if applicable)
+- [ ] **3D CAD Ownership**: If feature involves geometry/CAD, uses owned CAD system (not third-party dependencies)
+
+**Justification for Any Violations**: [Document why any principle cannot be followed and what alternative approach maintains the spirit of the principle]
 
 ## Project Structure
 

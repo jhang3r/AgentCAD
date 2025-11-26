@@ -1,0 +1,522 @@
+openapi: 3.0.0
+info:
+  title: Multi-Agent Controller API
+  description: Controller API for orchestrating multiple CAD agents with role-based specialization
+  version: 1.0.0
+
+paths:
+  /agent/create:
+    post:
+      summary: Create a new agent instance
+      operationId: createAgent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+                - role_name
+                - workspace_id
+              properties:
+                agent_id:
+                  type: string
+                  description: Unique identifier for the agent
+                  example: "designer_001"
+                role_name:
+                  type: string
+                  description: Role template name
+                  enum: [designer, modeler, constraint_solver, validator, optimizer, integrator]
+                workspace_id:
+                  type: string
+                  description: Workspace ID (must exist in CAD environment)
+                  example: "ws_designer_001"
+      responses:
+        '200':
+          description: Agent created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        '400':
+          description: Invalid request (duplicate agent_id, invalid role, workspace doesn't exist)
+        '500':
+          description: Internal error during agent creation
+
+  /agent/{agent_id}/execute:
+    post:
+      summary: Execute a CAD operation via the agent
+      operationId: executeOperation
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - operation
+                - params
+              properties:
+                operation:
+                  type: string
+                  description: JSON-RPC method name
+                  example: "entity.create_point"
+                params:
+                  type: object
+                  description: Operation parameters
+                  example: {"x": 10.0, "y": 20.0, "z": 0.0}
+      responses:
+        '200':
+          description: Operation executed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  result:
+                    type: object
+                    description: Operation result from CAD CLI
+                  agent_metrics:
+                    $ref: '#/components/schemas/AgentMetrics'
+        '403':
+          description: Role violation - operation not allowed for agent's role
+        '404':
+          description: Agent not found
+        '500':
+          description: Operation failed
+
+  /agent/{agent_id}/metrics:
+    get:
+      summary: Get agent performance metrics
+      operationId: getAgentMetrics
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentMetrics'
+        '404':
+          description: Agent not found
+
+  /agent/{agent_id}/shutdown:
+    post:
+      summary: Shutdown an agent and clean up resources
+      operationId: shutdownAgent
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Agent shutdown successfully
+        '404':
+          description: Agent not found
+
+  /message/send:
+    post:
+      summary: Send a message from one agent to another
+      operationId: sendMessage
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - from_agent_id
+                - to_agent_id
+                - message_type
+                - content
+              properties:
+                from_agent_id:
+                  type: string
+                to_agent_id:
+                  type: string
+                  description: Target agent ID or "broadcast" for all agents
+                message_type:
+                  type: string
+                  enum: [request, response, broadcast, error]
+                content:
+                  type: object
+                  description: Message payload (structure depends on message_type)
+      responses:
+        '200':
+          description: Message sent successfully
+        '404':
+          description: Agent not found
+
+  /message/{agent_id}/retrieve:
+    get:
+      summary: Retrieve messages for an agent
+      operationId: getMessages
+      parameters:
+        - name: agent_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: mark_read
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Messages retrieved
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentMessage'
+        '404':
+          description: Agent not found
+
+  /task/decompose:
+    post:
+      summary: Decompose a high-level goal into specific tasks
+      operationId: decomposeTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - goal_description
+              properties:
+                goal_description:
+                  type: string
+                  description: High-level design goal
+                  example: "Create a box assembly with lid and mounting holes"
+                context:
+                  type: object
+                  description: Additional context (dimensions, constraints, etc.)
+      responses:
+        '200':
+          description: Tasks decomposed successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TaskAssignment'
+        '400':
+          description: Invalid or ambiguous goal description
+
+  /task/{task_id}/assign:
+    post:
+      summary: Assign a task to an agent
+      operationId: assignTask
+      parameters:
+        - name: task_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - agent_id
+              properties:
+                agent_id:
+                  type: string
+      responses:
+        '200':
+          description: Task assigned successfully
+        '400':
+          description: Agent role incompatible with task requirements
+        '404':
+          description: Task or agent not found
+
+  /workflow/execute:
+    post:
+      summary: Execute a collaborative scenario workflow
+      operationId: executeWorkflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - scenario_name
+              properties:
+                scenario_name:
+                  type: string
+                  enum: [assembly_design, design_review_loop, parallel_component_creation]
+                agent_overrides:
+                  type: array
+                  description: Override default agent assignments
+                  items:
+                    type: object
+                    properties:
+                      agent_id:
+                        type: string
+                      role_name:
+                        type: string
+      responses:
+        '200':
+          description: Workflow started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowExecution'
+        '400':
+          description: Invalid scenario or agent configuration
+        '500':
+          description: Workflow initialization failed
+
+  /workflow/{workflow_id}/status:
+    get:
+      summary: Get workflow execution status
+      operationId: getWorkflowStatus
+      parameters:
+        - name: workflow_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Workflow status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowExecution'
+        '404':
+          description: Workflow not found
+
+components:
+  schemas:
+    Agent:
+      type: object
+      required:
+        - agent_id
+        - role
+        - workspace_id
+        - status
+      properties:
+        agent_id:
+          type: string
+        role:
+          $ref: '#/components/schemas/RoleTemplate'
+        workspace_id:
+          type: string
+        operation_count:
+          type: integer
+        success_count:
+          type: integer
+        error_count:
+          type: integer
+        created_entities:
+          type: array
+          items:
+            type: string
+        error_log:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [idle, working, error, terminated]
+        created_at:
+          type: number
+          format: float
+        last_active:
+          type: number
+          format: float
+
+    RoleTemplate:
+      type: object
+      required:
+        - name
+        - description
+        - allowed_operations
+        - forbidden_operations
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        allowed_operations:
+          type: array
+          items:
+            type: string
+        forbidden_operations:
+          type: array
+          items:
+            type: string
+        example_tasks:
+          type: array
+          items:
+            type: string
+
+    AgentMetrics:
+      type: object
+      properties:
+        agent_id:
+          type: string
+        operation_count:
+          type: integer
+        success_count:
+          type: integer
+        error_count:
+          type: integer
+        success_rate:
+          type: number
+          format: float
+          description: success_count / operation_count
+        error_rate_trend:
+          type: string
+          description: "improving", "stable", "degrading"
+        average_operation_time:
+          type: number
+          format: float
+          description: Average time in seconds per operation
+        learning_status:
+          type: string
+          description: "improving", "stable", "needs_attention"
+
+    AgentMessage:
+      type: object
+      required:
+        - message_id
+        - from_agent_id
+        - to_agent_id
+        - message_type
+        - content
+        - timestamp
+      properties:
+        message_id:
+          type: string
+        from_agent_id:
+          type: string
+        to_agent_id:
+          type: string
+        message_type:
+          type: string
+          enum: [request, response, broadcast, error]
+        content:
+          type: object
+        timestamp:
+          type: number
+          format: float
+        read:
+          type: boolean
+
+    TaskAssignment:
+      type: object
+      required:
+        - task_id
+        - agent_id
+        - description
+        - required_operations
+        - success_criteria
+        - status
+      properties:
+        task_id:
+          type: string
+        agent_id:
+          type: string
+        description:
+          type: string
+        required_operations:
+          type: array
+          items:
+            type: string
+        dependencies:
+          type: array
+          items:
+            type: string
+        success_criteria:
+          type: string
+        status:
+          type: string
+          enum: [pending, in_progress, completed, failed, blocked]
+        assigned_at:
+          type: number
+          format: float
+        completed_at:
+          type: number
+          format: float
+          nullable: true
+        result:
+          type: object
+          nullable: true
+
+    WorkflowExecution:
+      type: object
+      required:
+        - workflow_id
+        - scenario_name
+        - execution_state
+        - completion_percentage
+      properties:
+        workflow_id:
+          type: string
+        scenario_name:
+          type: string
+        task_assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskAssignment'
+        execution_state:
+          type: string
+          enum: [initializing, running, completed, failed, partial_failure]
+        completion_percentage:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 100
+        agent_failures:
+          type: array
+          items:
+            type: object
+            properties:
+              agent_id:
+                type: string
+              task_id:
+                type: string
+              error:
+                type: string
+        started_at:
+          type: number
+          format: float
+        completed_at:
+          type: number
+          format: float
+          nullable: true
+        metrics:
+          type: object
+          properties:
+            total_operations:
+              type: integer
+            total_duration:
+              type: number
+              format: float
+            agents_used:
+              type: integer

@@ -2,6 +2,8 @@
 
 Auto-generated from all feature plans. Last updated: [DATE]
 
+**CRITICAL**: All development MUST comply with `.specify/memory/constitution.md`. This document provides runtime guidance; the constitution defines non-negotiable principles.
+
 ## Active Technologies
 
 [EXTRACTED FROM ALL PLAN.MD FILES]

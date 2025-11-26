@@ -46,6 +46,7 @@ You **MUST** consider the user input before proceeding (if not empty).
      - Automatically proceed to step 3
 
 3. Load and analyze the implementation context:
+   - **REQUIRED**: Read `.specify/memory/constitution.md` for non-negotiable development principles and forbidden patterns
    - **REQUIRED**: Read tasks.md for the complete task list and execution plan
    - **REQUIRED**: Read plan.md for tech stack, architecture, and file structure
    - **IF EXISTS**: Read data-model.md for entities and relationships
@@ -111,11 +112,13 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **Validation checkpoints**: Verify each phase completion before proceeding
 
 7. Implementation execution rules:
+   - **Constitution compliance**: NEVER generate mocks, stubs, proxies, TODO comments, or placeholder code (see constitution.md)
    - **Setup first**: Initialize project structure, dependencies, configuration
-   - **Tests before code**: If you need to write tests for contracts, entities, and integration scenarios
-   - **Core development**: Implement models, services, CLI commands, endpoints
-   - **Integration work**: Database connections, middleware, logging, external services
+   - **Tests before code**: If you need to write tests for contracts, entities, and integration scenarios (MUST use real dependencies, no mocks)
+   - **Core development**: Implement models, services, CLI commands, endpoints (100% real implementations only)
+   - **Integration work**: Database connections, middleware, logging, external services (real instances, containers acceptable)
    - **Polish and validation**: Unit tests, performance optimization, documentation
+   - **Forbidden patterns check**: Before marking ANY task complete, verify zero instances of: mock, stub, proxy, TODO, FIXME, @skip, @ignore
 
 8. Progress tracking and error handling:
    - Report progress after each completed task
@@ -126,10 +129,12 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IMPORTANT** For completed tasks, make sure to mark the task off as [X] in the tasks file.
 
 9. Completion validation:
-   - Verify all required tasks are completed
+   - **Constitution compliance check**: Run `grep -r "TODO\|FIXME\|mock\|stub\|proxy\|@skip\|@ignore" src/ tests/` and verify zero matches
+   - Verify all required tasks are completed (100% real, working code per constitution.md)
    - Check that implemented features match the original specification
-   - Validate that tests pass and coverage meets requirements
+   - Validate that tests pass (using real dependencies, not mocks)
    - Confirm the implementation follows the technical plan
+   - Verify all tasks meet the 7 completion criteria from constitution.md (compiles, tests pass, no mocks/todos, integrated, deployable, documented, observable)
    - Report final status with summary of completed work
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
