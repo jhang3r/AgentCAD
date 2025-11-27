@@ -1,14 +1,100 @@
 # Contract: Export Operations API
 
-**Version**: 1.0.0
+**Version**: 1.1.0
 **Date**: 2025-11-26
-**Purpose**: Define CLI contracts for geometry export (STL)
+**Purpose**: Define CLI contracts for geometry export (STEP, STL)
 
 ---
 
 ## Overview
 
-Export operations convert 3D solids to external file formats. The primary operation is STL export with real tessellation (replacing placeholder code). All exports validate geometry, generate mesh, and write to file.
+Export operations convert 3D solids to external file formats:
+- **STEP**: Preserves exact BRep geometry for CAD-to-CAD exchange (ISO 10303 standard)
+- **STL**: Triangulated mesh for 3D printing and visualization
+
+All exports validate geometry before export and provide detailed statistics.
+
+---
+
+## file.export (STEP)
+
+**Purpose**: Export 3D solid(s) to STEP file with exact BRep geometry preservation
+
+**Method**: `file.export`
+
+**Parameters**:
+```json
+{
+    "file_path": "output.step",
+    "format": "step",
+    "entity_ids": ["ws:solid_1", "ws:solid_2"],  // Optional, default: all solids
+    "workspace_id": "workspace_id",
+    "schema": "AP214"  // Optional: AP203, AP214, AP242
+}
+```
+
+**Parameter Constraints**:
+- `file_path`: Valid file path, must end with .step or .stp
+- `format`: Must be "step"
+- `entity_ids`: If provided, must reference existing solids; if omitted, exports all solids in workspace
+- `schema`: STEP schema - AP203 (3D design), AP214 (automotive, default), or AP242 (latest standard)
+
+**Example Request**:
+```bash
+py -m src.agent_interface.cli file.export --params '{
+    "file_path": "assembly.step",
+    "format": "step",
+    "entity_ids": ["ws:box_123", "ws:cylinder_456"],
+    "workspace_id": "my_workspace",
+    "schema": "AP214"
+}'
+```
+
+**Success Response**:
+```json
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "status": "success",
+        "data": {
+            "file_path": "assembly.step",
+            "format": "step",
+            "schema": "AP214",
+            "entity_count": 2,
+            "file_size": 45821,
+            "data_loss": false,
+            "notes": [
+                "STEP format preserves exact BRep geometry (schema: AP214)",
+                "Compatible with most CAD software (SolidWorks, CATIA, NX, etc.)",
+                "Recommended for CAD-to-CAD data exchange"
+            ]
+        },
+        "metadata": {
+            "operation_type": "file.export",
+            "execution_time_ms": 342
+        }
+    }
+}
+```
+
+**Response Fields**:
+- `file_path`: Absolute path to created file
+- `schema`: STEP schema used
+- `entity_count`: Number of solids exported
+- `file_size`: File size in bytes
+- `data_loss`: Always false for STEP (exact geometry preserved)
+- `execution_time_ms`: Time to write STEP file
+
+**Possible Errors**:
+- `-32602`: Invalid parameters (bad file path, entity not found, invalid schema)
+- `-32603`: Export failed (file write error, invalid geometry)
+
+**Notes**:
+- STEP preserves exact BRep geometry (unlike STL which is mesh-only)
+- Recommended for sharing designs with other CAD software
+- Faster than STL export (no tessellation required)
+- Larger file size than STL but preserves all design information
 
 ---
 

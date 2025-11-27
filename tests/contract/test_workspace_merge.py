@@ -118,9 +118,7 @@ def test_workspace_merge_with_conflicts():
 
     workspace_id = create_response["result"]["data"]["workspace_id"]
 
-    # TODO: Modify the same entity in both workspaces
-    # This would require entity update operations
-    # For now, test the merge interface
+    # Test the merge interface (entity update operations not yet implemented)
 
     # Attempt merge
     request = {
@@ -178,9 +176,10 @@ def test_workspace_merge_missing_params():
 
 
 def test_workspace_resolve_conflict_keep_source():
-    """Test resolving conflict by keeping source version."""
-    # This is a placeholder - full conflict resolution would require
-    # entity update operations to create actual conflicts
+    """Test resolving conflict by keeping source version.
+
+    Note: Full conflict resolution requires entity update operations to create actual conflicts.
+    """
 
     request = {
         "jsonrpc": "2.0",

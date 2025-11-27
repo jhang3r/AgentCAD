@@ -90,7 +90,17 @@ class CLI:
             "constraint.apply": self._handle_constraint_apply,
             "constraint.status": self._handle_constraint_status,
             "solid.extrude": self._handle_solid_extrude,
+            "solid.revolve": self._handle_solid_revolve,
+            "solid.loft": self._handle_solid_loft,
+            "solid.sweep": self._handle_solid_sweep,
             "solid.boolean": self._handle_solid_boolean,
+            "solid.boolean.union": self._handle_boolean_union,
+            "solid.boolean.subtract": self._handle_boolean_subtract,
+            "solid.boolean.intersect": self._handle_boolean_intersect,
+            "solid.primitive": self._handle_solid_primitive,
+            "solid.pattern.linear": self._handle_pattern_linear,
+            "solid.pattern.circular": self._handle_pattern_circular,
+            "solid.mirror": self._handle_solid_mirror,
             "workspace.create": self._handle_workspace_create,
             "workspace.list": self._handle_workspace_list,
             "workspace.switch": self._handle_workspace_switch,
@@ -1122,6 +1132,581 @@ class CLI:
         # Return result data
         return result_solid.to_dict()
 
+    def _handle_boolean_union(self, request) -> dict[str, Any]:
+        """Handle solid.boolean.union request (A ∪ B)."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import boolean_ops
+        from ..cad_kernel.geometry_engine import GeometryShape
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters per contract
+        operand1_id = self.parser.get_param(request, "operand1_entity_id", default=None)
+        operand2_id = self.parser.get_param(request, "operand2_entity_id", default=None)
+
+        # Fallback to solid1/solid2 for compatibility
+        if operand1_id is None:
+            operand1_id = self.parser.get_param(request, "solid1_entity_id", required=True)
+        if operand2_id is None:
+            operand2_id = self.parser.get_param(request, "solid2_entity_id", required=True)
+
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+        agent_id = self.parser.get_param(request, "agent_id", default="agent")
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        try:
+            # Load geometry shapes from database
+            cursor = self.database.connection.cursor()
+
+            # Load operand 1
+            cursor.execute("SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                         (operand1_id, workspace_id))
+            row1 = cursor.fetchone()
+            if row1 is None:
+                raise ValueError(f"Entity '{operand1_id}' not found in workspace '{workspace_id}'")
+
+            shape1_geo = self.database.get_geometry_shape(row1[0])
+            if shape1_geo is None:
+                raise ValueError(f"Geometry shape not found for entity '{operand1_id}'")
+            shape1 = shape1_geo.to_shape()
+
+            # Load operand 2
+            cursor.execute("SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                         (operand2_id, workspace_id))
+            row2 = cursor.fetchone()
+            if row2 is None:
+                raise ValueError(f"Entity '{operand2_id}' not found in workspace '{workspace_id}'")
+
+            shape2_geo = self.database.get_geometry_shape(row2[0])
+            if shape2_geo is None:
+                raise ValueError(f"Geometry shape not found for entity '{operand2_id}'")
+            shape2 = shape2_geo.to_shape()
+
+            # Perform boolean union
+            result_geo, result_props = boolean_ops.union(
+                shape1, shape2, workspace_id, operand1_id, operand2_id
+            )
+
+            # Save result to database
+            import uuid
+            entity_id = f"{workspace_id}:union_{uuid.uuid4().hex[:8]}"
+
+            # Save geometry shape
+            self.database.save_geometry_shape(result_geo)
+
+            # Create entity record with required fields
+            bbox = {
+                "min": [result_props.bounding_box_min_x, result_props.bounding_box_min_y, result_props.bounding_box_min_z],
+                "max": [result_props.bounding_box_max_x, result_props.bounding_box_max_y, result_props.bounding_box_max_z]
+            }
+
+            cursor.execute("""
+                INSERT INTO entities (
+                    entity_id, entity_type, workspace_id, shape_id,
+                    created_at, modified_at, created_by_agent,
+                    properties, bounding_box, is_valid, validation_errors
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                entity_id, "solid", workspace_id, result_geo.shape_id,
+                datetime.now(timezone.utc).isoformat(),
+                datetime.now(timezone.utc).isoformat(),
+                agent_id,
+                json.dumps({"volume": result_props.volume, "surface_area": result_props.surface_area}),
+                json.dumps(bbox),
+                True,
+                json.dumps([])
+            ))
+
+            # Save properties
+            self.database.save_solid_properties(entity_id, result_props)
+
+            # Log boolean operation
+            cursor.execute("""
+                INSERT INTO boolean_operations (
+                    operation_id, operation_type, operand1_entity_id, operand2_entity_id,
+                    output_entity_id, workspace_id, agent_id, executed_at,
+                    execution_time_ms, success, error_message
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                f"union_{uuid.uuid4().hex[:8]}", "UNION",
+                operand1_id, operand2_id, entity_id,
+                workspace_id, agent_id,
+                datetime.now(timezone.utc).isoformat(),
+                0, True, None
+            ))
+
+            self.database.connection.commit()
+
+            # Return result per contract format
+            return {
+                "entity_id": entity_id,
+                "shape_id": result_geo.shape_id,
+                "operation_type": "union",
+                "operand1_id": operand1_id,
+                "operand2_id": operand2_id,
+                "volume": result_props.volume,
+                "surface_area": result_props.surface_area,
+                "center_of_mass": [
+                    result_props.center_of_mass_x,
+                    result_props.center_of_mass_y,
+                    result_props.center_of_mass_z
+                ],
+                "topology": {
+                    "face_count": result_props.face_count,
+                    "edge_count": result_props.edge_count,
+                    "vertex_count": result_props.vertex_count,
+                    "is_closed": result_props.is_closed,
+                    "is_manifold": result_props.is_manifold
+                }
+            }
+
+        except (InvalidGeometryError, OperationFailedError) as e:
+            raise ValueError(str(e))
+
+    def _handle_boolean_subtract(self, request) -> dict[str, Any]:
+        """Handle solid.boolean.subtract request (A - B)."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import boolean_ops
+        from ..cad_kernel.geometry_engine import GeometryShape
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters per contract
+        base_id = self.parser.get_param(request, "base_entity_id", required=True)
+        tool_id = self.parser.get_param(request, "tool_entity_id", required=True)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+        agent_id = self.parser.get_param(request, "agent_id", default="agent")
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        try:
+            # Load geometry shapes from database
+            cursor = self.database.connection.cursor()
+
+            # Load base
+            cursor.execute("SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                         (base_id, workspace_id))
+            row1 = cursor.fetchone()
+            if row1 is None:
+                raise ValueError(f"Entity '{base_id}' not found in workspace '{workspace_id}'")
+
+            base_geo = self.database.get_geometry_shape(row1[0])
+            if base_geo is None:
+                raise ValueError(f"Geometry shape not found for entity '{base_id}'")
+            base_shape = base_geo.to_shape()
+
+            # Load tool
+            cursor.execute("SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                         (tool_id, workspace_id))
+            row2 = cursor.fetchone()
+            if row2 is None:
+                raise ValueError(f"Entity '{tool_id}' not found in workspace '{workspace_id}'")
+
+            tool_geo = self.database.get_geometry_shape(row2[0])
+            if tool_geo is None:
+                raise ValueError(f"Geometry shape not found for entity '{tool_id}'")
+            tool_shape = tool_geo.to_shape()
+
+            # Perform boolean subtract
+            result_geo, result_props = boolean_ops.subtract(
+                base_shape, tool_shape, workspace_id, base_id, tool_id
+            )
+
+            # Save result to database
+            import uuid
+            entity_id = f"{workspace_id}:subtract_{uuid.uuid4().hex[:8]}"
+
+            # Save geometry shape
+            self.database.save_geometry_shape(result_geo)
+
+            # Create entity record with required fields
+            bbox = {
+                "min": [result_props.bounding_box_min_x, result_props.bounding_box_min_y, result_props.bounding_box_min_z],
+                "max": [result_props.bounding_box_max_x, result_props.bounding_box_max_y, result_props.bounding_box_max_z]
+            }
+
+            cursor.execute("""
+                INSERT INTO entities (
+                    entity_id, entity_type, workspace_id, shape_id,
+                    created_at, modified_at, created_by_agent,
+                    properties, bounding_box, is_valid, validation_errors
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                entity_id, "solid", workspace_id, result_geo.shape_id,
+                datetime.now(timezone.utc).isoformat(),
+                datetime.now(timezone.utc).isoformat(),
+                agent_id,
+                json.dumps({"volume": result_props.volume, "surface_area": result_props.surface_area}),
+                json.dumps(bbox),
+                True,
+                json.dumps([])
+            ))
+
+            # Save properties
+            self.database.save_solid_properties(entity_id, result_props)
+
+            # Log boolean operation
+            cursor.execute("""
+                INSERT INTO boolean_operations (
+                    operation_id, operation_type, operand1_entity_id, operand2_entity_id,
+                    output_entity_id, workspace_id, agent_id, executed_at,
+                    execution_time_ms, success, error_message
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                f"subtract_{uuid.uuid4().hex[:8]}", "SUBTRACT",
+                base_id, tool_id, entity_id,
+                workspace_id, agent_id,
+                datetime.now(timezone.utc).isoformat(),
+                0, True, None
+            ))
+
+            self.database.connection.commit()
+
+            # Return result per contract format
+            return {
+                "entity_id": entity_id,
+                "shape_id": result_geo.shape_id,
+                "operation_type": "subtract",
+                "base_id": base_id,
+                "tool_id": tool_id,
+                "volume": result_props.volume,
+                "surface_area": result_props.surface_area,
+                "center_of_mass": [
+                    result_props.center_of_mass_x,
+                    result_props.center_of_mass_y,
+                    result_props.center_of_mass_z
+                ],
+                "topology": {
+                    "face_count": result_props.face_count,
+                    "edge_count": result_props.edge_count,
+                    "vertex_count": result_props.vertex_count,
+                    "is_closed": result_props.is_closed,
+                    "is_manifold": result_props.is_manifold
+                }
+            }
+
+        except (InvalidGeometryError, OperationFailedError) as e:
+            raise ValueError(str(e))
+
+    def _handle_boolean_intersect(self, request) -> dict[str, Any]:
+        """Handle solid.boolean.intersect request (A ∩ B)."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import boolean_ops
+        from ..cad_kernel.geometry_engine import GeometryShape
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters per contract
+        operand1_id = self.parser.get_param(request, "operand1_entity_id", default=None)
+        operand2_id = self.parser.get_param(request, "operand2_entity_id", default=None)
+
+        # Fallback to solid1/solid2 for compatibility
+        if operand1_id is None:
+            operand1_id = self.parser.get_param(request, "solid1_entity_id", required=True)
+        if operand2_id is None:
+            operand2_id = self.parser.get_param(request, "solid2_entity_id", required=True)
+
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+        agent_id = self.parser.get_param(request, "agent_id", default="agent")
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        try:
+            # Load geometry shapes from database
+            cursor = self.database.connection.cursor()
+
+            # Load operand 1
+            cursor.execute("SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                         (operand1_id, workspace_id))
+            row1 = cursor.fetchone()
+            if row1 is None:
+                raise ValueError(f"Entity '{operand1_id}' not found in workspace '{workspace_id}'")
+
+            shape1_geo = self.database.get_geometry_shape(row1[0])
+            if shape1_geo is None:
+                raise ValueError(f"Geometry shape not found for entity '{operand1_id}'")
+            shape1 = shape1_geo.to_shape()
+
+            # Load operand 2
+            cursor.execute("SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                         (operand2_id, workspace_id))
+            row2 = cursor.fetchone()
+            if row2 is None:
+                raise ValueError(f"Entity '{operand2_id}' not found in workspace '{workspace_id}'")
+
+            shape2_geo = self.database.get_geometry_shape(row2[0])
+            if shape2_geo is None:
+                raise ValueError(f"Geometry shape not found for entity '{operand2_id}'")
+            shape2 = shape2_geo.to_shape()
+
+            # Perform boolean intersect
+            result_geo, result_props = boolean_ops.intersect(
+                shape1, shape2, workspace_id, operand1_id, operand2_id
+            )
+
+            # Save result to database
+            import uuid
+            entity_id = f"{workspace_id}:intersect_{uuid.uuid4().hex[:8]}"
+
+            # Save geometry shape
+            self.database.save_geometry_shape(result_geo)
+
+            # Create entity record with required fields
+            bbox = {
+                "min": [result_props.bounding_box_min_x, result_props.bounding_box_min_y, result_props.bounding_box_min_z],
+                "max": [result_props.bounding_box_max_x, result_props.bounding_box_max_y, result_props.bounding_box_max_z]
+            }
+
+            cursor.execute("""
+                INSERT INTO entities (
+                    entity_id, entity_type, workspace_id, shape_id,
+                    created_at, modified_at, created_by_agent,
+                    properties, bounding_box, is_valid, validation_errors
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                entity_id, "solid", workspace_id, result_geo.shape_id,
+                datetime.now(timezone.utc).isoformat(),
+                datetime.now(timezone.utc).isoformat(),
+                agent_id,
+                json.dumps({"volume": result_props.volume, "surface_area": result_props.surface_area}),
+                json.dumps(bbox),
+                True,
+                json.dumps([])
+            ))
+
+            # Save properties
+            self.database.save_solid_properties(entity_id, result_props)
+
+            # Log boolean operation
+            cursor.execute("""
+                INSERT INTO boolean_operations (
+                    operation_id, operation_type, operand1_entity_id, operand2_entity_id,
+                    output_entity_id, workspace_id, agent_id, executed_at,
+                    execution_time_ms, success, error_message
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                f"intersect_{uuid.uuid4().hex[:8]}", "INTERSECT",
+                operand1_id, operand2_id, entity_id,
+                workspace_id, agent_id,
+                datetime.now(timezone.utc).isoformat(),
+                0, True, None
+            ))
+
+            self.database.connection.commit()
+
+            # Return result per contract format
+            return {
+                "entity_id": entity_id,
+                "shape_id": result_geo.shape_id,
+                "operation_type": "intersect",
+                "operand1_id": operand1_id,
+                "operand2_id": operand2_id,
+                "volume": result_props.volume,
+                "surface_area": result_props.surface_area,
+                "center_of_mass": [
+                    result_props.center_of_mass_x,
+                    result_props.center_of_mass_y,
+                    result_props.center_of_mass_z
+                ],
+                "topology": {
+                    "face_count": result_props.face_count,
+                    "edge_count": result_props.edge_count,
+                    "vertex_count": result_props.vertex_count,
+                    "is_closed": result_props.is_closed,
+                    "is_manifold": result_props.is_manifold
+                }
+            }
+
+        except (InvalidGeometryError, OperationFailedError) as e:
+            raise ValueError(str(e))
+
+    def _handle_solid_primitive(self, request) -> dict[str, Any]:
+        """Handle solid.primitive request (box, cylinder, sphere, cone)."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import primitive_ops
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters
+        primitive_type = self.parser.get_param(request, "primitive_type", required=True)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        # Route to appropriate primitive function
+        try:
+            if primitive_type == "box":
+                width = self.parser.get_param(request, "width", required=True)
+                depth = self.parser.get_param(request, "depth", required=True)
+                height = self.parser.get_param(request, "height", required=True)
+                position = self.parser.get_param(request, "position", default=None)
+
+                geo_shape, props = primitive_ops.create_box(
+                    width=width,
+                    depth=depth,
+                    height=height,
+                    workspace_id=workspace_id,
+                    position=tuple(position) if position else None
+                )
+
+            elif primitive_type == "cylinder":
+                radius = self.parser.get_param(request, "radius", required=True)
+                height = self.parser.get_param(request, "height", required=True)
+                position = self.parser.get_param(request, "axis_point", default=None)
+                direction = self.parser.get_param(request, "axis_direction", default=None)
+
+                geo_shape, props = primitive_ops.create_cylinder(
+                    radius=radius,
+                    height=height,
+                    workspace_id=workspace_id,
+                    position=tuple(position) if position else None,
+                    direction=tuple(direction) if direction else None
+                )
+
+            elif primitive_type == "sphere":
+                radius = self.parser.get_param(request, "radius", required=True)
+                center = self.parser.get_param(request, "center", default=None)
+
+                geo_shape, props = primitive_ops.create_sphere(
+                    radius=radius,
+                    workspace_id=workspace_id,
+                    center=tuple(center) if center else None
+                )
+
+            elif primitive_type == "cone":
+                radius1 = self.parser.get_param(request, "radius1", required=True)
+                radius2 = self.parser.get_param(request, "radius2", required=True)
+                height = self.parser.get_param(request, "height", required=True)
+                position = self.parser.get_param(request, "axis_point", default=None)
+                direction = self.parser.get_param(request, "axis_direction", default=None)
+
+                geo_shape, props = primitive_ops.create_cone(
+                    radius1=radius1,
+                    radius2=radius2,
+                    height=height,
+                    workspace_id=workspace_id,
+                    position=tuple(position) if position else None,
+                    direction=tuple(direction) if direction else None
+                )
+
+            else:
+                raise ValueError(
+                    f"Unsupported primitive type: {primitive_type}. "
+                    f"Supported types: box, cylinder, sphere, cone"
+                )
+
+        except (InvalidGeometryError, OperationFailedError) as e:
+            raise ValueError(str(e))
+
+        # Store geometry shape in database
+        shape_dict = geo_shape.to_dict()
+        cursor = self.database.connection.cursor()
+        cursor.execute("""
+            INSERT INTO geometry_shapes
+            (shape_id, shape_type, brep_data, is_valid, created_at, workspace_id)
+            VALUES (?, ?, ?, ?, ?, ?)
+        """, (
+            shape_dict["shape_id"],
+            shape_dict["shape_type"],
+            shape_dict["brep_data"],
+            shape_dict["is_valid"],
+            shape_dict["created_at"],
+            shape_dict["workspace_id"]
+        ))
+
+        # Store entity
+        entity_id = props.entity_id
+        cursor.execute("""
+            INSERT INTO entities
+            (entity_id, entity_type, workspace_id, created_at, modified_at,
+             created_by_agent, parent_entities, child_entities, properties,
+             bounding_box, is_valid, validation_errors, shape_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            entity_id,
+            "solid",
+            workspace_id,
+            datetime.now(timezone.utc).isoformat(),
+            datetime.now(timezone.utc).isoformat(),
+            "agent",
+            json.dumps([]),
+            json.dumps([]),
+            json.dumps({"primitive_type": primitive_type}),
+            json.dumps({
+                "min": [props.bounding_box_min_x, props.bounding_box_min_y, props.bounding_box_min_z],
+                "max": [props.bounding_box_max_x, props.bounding_box_max_y, props.bounding_box_max_z]
+            }),
+            1,
+            None,
+            geo_shape.shape_id
+        ))
+
+        # Store solid properties
+        props_dict = props.to_dict()
+        cursor.execute("""
+            INSERT INTO solid_properties
+            (entity_id, volume, surface_area,
+             center_of_mass_x, center_of_mass_y, center_of_mass_z,
+             bounding_box_min_x, bounding_box_min_y, bounding_box_min_z,
+             bounding_box_max_x, bounding_box_max_y, bounding_box_max_z,
+             face_count, edge_count, vertex_count,
+             is_closed, is_manifold, computed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            props_dict["entity_id"],
+            props_dict["volume"],
+            props_dict["surface_area"],
+            props_dict["center_of_mass_x"],
+            props_dict["center_of_mass_y"],
+            props_dict["center_of_mass_z"],
+            props_dict["bounding_box_min_x"],
+            props_dict["bounding_box_min_y"],
+            props_dict["bounding_box_min_z"],
+            props_dict["bounding_box_max_x"],
+            props_dict["bounding_box_max_y"],
+            props_dict["bounding_box_max_z"],
+            props_dict["face_count"],
+            props_dict["edge_count"],
+            props_dict["vertex_count"],
+            props_dict["is_closed"],
+            props_dict["is_manifold"],
+            props_dict["computed_at"]
+        ))
+
+        self.database.connection.commit()
+
+        # Log operation
+        self.logger.info(
+            f"Created {primitive_type} primitive {entity_id}",
+            primitive_type=primitive_type,
+            volume=props.volume
+        )
+
+        # Return result in contract format
+        return {
+            "entity_id": entity_id,
+            "shape_id": geo_shape.shape_id,
+            "volume": props.volume,
+            "surface_area": props.surface_area,
+            "center_of_mass": [
+                props.center_of_mass_x,
+                props.center_of_mass_y,
+                props.center_of_mass_z
+            ],
+            "topology": {
+                "face_count": props.face_count,
+                "edge_count": props.edge_count,
+                "vertex_count": props.vertex_count,
+                "is_closed": props.is_closed,
+                "is_manifold": props.is_manifold
+            }
+        }
+
     def _handle_workspace_create(self, request) -> dict[str, Any]:
         """Handle workspace.create request."""
         # Parse parameters
@@ -1420,78 +2005,116 @@ class CLI:
         }
 
     def _handle_file_export(self, request) -> dict[str, Any]:
-        """Handle file.export request."""
+        """Handle file.export request for STEP, STL, and JSON formats."""
         # Parse parameters
         file_path = self.parser.get_param(request, "file_path", required=True)
         format_type = self.parser.get_param(request, "format", required=True)
         entity_ids = self.parser.get_param(request, "entity_ids", default=None)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        # Get workspace ID (from param or active workspace)
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
 
         # Validate format
-        supported_formats = ["json", "stl"]
-        if format_type not in supported_formats:
-            raise ValueError(f"Unsupported format '{format_type}'. Supported: {', '.join(supported_formats)}")
+        supported_formats = ["json", "stl", "step"]
+        if format_type.lower() not in supported_formats:
+            raise ValueError(
+                f"Unsupported format '{format_type}'. "
+                f"Supported: {', '.join(supported_formats)}"
+            )
 
-        workspace_id = self._get_active_workspace_id()
-
-        # Get entities to export
-        if entity_ids is None:
-            # Export all entities in workspace
-            cursor = self.database.connection.cursor()
-            cursor.execute("""
-                SELECT entity_id, entity_type, properties
-                FROM entities
-                WHERE workspace_id = ?
-            """, (workspace_id,))
-            rows = cursor.fetchall()
-
-            entities = []
-            for entity_id, entity_type, properties_json in rows:
-                import json
-                properties = json.loads(properties_json) if properties_json else {}
-                entities.append({
-                    "entity_id": entity_id,
-                    "entity_type": entity_type,
-                    **properties
-                })
-        else:
-            # Export specific entities
-            cursor = self.database.connection.cursor()
-            entities = []
-            for entity_id in entity_ids:
-                # Read from database directly to handle all entity types including solids
+        # Handle JSON export (2D entities, metadata)
+        if format_type.lower() == "json":
+            # Get entities to export (old implementation for JSON)
+            if entity_ids is None:
+                cursor = self.database.connection.cursor()
                 cursor.execute("""
                     SELECT entity_id, entity_type, properties
                     FROM entities
-                    WHERE entity_id = ? AND workspace_id = ?
-                """, (entity_id, workspace_id))
-                row = cursor.fetchone()
-                if row:
-                    eid, etype, properties_json = row
+                    WHERE workspace_id = ?
+                """, (workspace_id,))
+                rows = cursor.fetchall()
+
+                entities = []
+                for entity_id, entity_type, properties_json in rows:
                     import json
                     properties = json.loads(properties_json) if properties_json else {}
                     entities.append({
-                        "entity_id": eid,
-                        "entity_type": etype,
+                        "entity_id": entity_id,
+                        "entity_type": entity_type,
                         **properties
                     })
+            else:
+                cursor = self.database.connection.cursor()
+                entities = []
+                for entity_id in entity_ids:
+                    cursor.execute("""
+                        SELECT entity_id, entity_type, properties
+                        FROM entities
+                        WHERE entity_id = ? AND workspace_id = ?
+                    """, (entity_id, workspace_id))
+                    row = cursor.fetchone()
+                    if row:
+                        eid, etype, properties_json = row
+                        import json
+                        properties = json.loads(properties_json) if properties_json else {}
+                        entities.append({
+                            "entity_id": eid,
+                            "entity_type": etype,
+                            **properties
+                        })
 
-        # Export based on format
-        if format_type == "json":
             from ..file_io.json_handler import export_json
             result = export_json(entities, file_path)
-        elif format_type == "stl":
-            from ..file_io.stl_handler import export_stl
-            # Filter to only solid entities
-            solids = [e for e in entities if e.get("entity_type") == "solid"]
-            if len(solids) == 0:
-                raise ValueError("No solid entities to export to STL")
-            result = export_stl(solids, file_path)
+
+        # Handle STEP/STL export (3D geometry)
+        elif format_type.lower() in ["step", "stl"]:
+            from ..file_io.export_manager import ExportManager
+
+            # Initialize export manager with database connection
+            export_mgr = ExportManager(self.database.connection)
+
+            # Get format-specific options
+            format_options = {}
+
+            if format_type.lower() == "stl":
+                # STL-specific options
+                tessellation_quality = self.parser.get_param(
+                    request, "tessellation_quality", default="standard"
+                )
+                ascii = self.parser.get_param(request, "ascii", default=False)
+                format_options["tessellation_quality"] = tessellation_quality
+                format_options["ascii"] = ascii
+
+            elif format_type.lower() == "step":
+                # STEP-specific options
+                schema = self.parser.get_param(request, "schema", default="AP214")
+                format_options["schema"] = schema
+
+            # Export entities or entire workspace
+            if entity_ids is None:
+                result = export_mgr.export_workspace(
+                    workspace_id=workspace_id,
+                    file_path=file_path,
+                    format=format_type.lower(),
+                    **format_options
+                )
+            else:
+                result = export_mgr.export_entities(
+                    entity_ids=entity_ids,
+                    file_path=file_path,
+                    format=format_type.lower(),
+                    workspace_id=workspace_id,
+                    **format_options
+                )
+
         else:
             raise ValueError(f"Unsupported format: {format_type}")
 
         # Log operation
         self.logger.info(
-            f"Exported {result['entity_count'] if 'entity_count' in result else len(entities)} entities to {file_path}",
+            f"Exported {result.get('entity_count', 0)} entities to {file_path}",
             format=format_type
         )
 
@@ -1840,6 +2463,550 @@ class CLI:
             "validations": validations,
             "summary": f"Workspace branching test completed with {len(validations)} checks"
         }
+
+    # ======================================================================
+    # NEW CREATION OPERATION HANDLERS (User Story 2)
+    # ======================================================================
+
+    def _handle_solid_revolve(self, request) -> dict[str, Any]:
+        """Handle solid.revolve request - revolve 2D profile around axis."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import creation_ops
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters
+        profile_entity_id = self.parser.get_param(request, "profile_entity_id", required=True)
+        axis_point = self.parser.get_param(request, "axis_point", required=True)
+        axis_direction = self.parser.get_param(request, "axis_direction", required=True)
+        angle = self.parser.get_param(request, "angle", required=True)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        # Get profile shape from database (must be a 2D profile/wire)
+        # For now, this is a placeholder - we'll need to retrieve the actual shape
+        # from the database when we have full 2D profile support
+        raise NotImplementedError("Revolve operation requires 2D profile support (coming in future phase)")
+
+    def _handle_solid_loft(self, request) -> dict[str, Any]:
+        """Handle solid.loft request - loft between multiple profiles."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import creation_ops
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters
+        profile_entity_ids = self.parser.get_param(request, "profile_entity_ids", required=True)
+        is_solid = self.parser.get_param(request, "is_solid", default=True)
+        is_ruled = self.parser.get_param(request, "is_ruled", default=False)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        raise NotImplementedError("Loft operation requires 2D profile support (coming in future phase)")
+
+    def _handle_solid_sweep(self, request) -> dict[str, Any]:
+        """Handle solid.sweep request - sweep profile along path."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import creation_ops
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters
+        profile_entity_id = self.parser.get_param(request, "profile_entity_id", required=True)
+        path_entity_id = self.parser.get_param(request, "path_entity_id", required=True)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        raise NotImplementedError("Sweep operation requires 2D profile support (coming in future phase)")
+
+    # ======================================================================
+    # PATTERN OPERATION HANDLERS
+    # ======================================================================
+
+    def _handle_pattern_linear(self, request) -> dict[str, Any]:
+        """Handle solid.pattern.linear request - create linear pattern of copies."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import pattern_ops
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters
+        base_entity_id = self.parser.get_param(request, "base_entity_id", required=True)
+        direction = self.parser.get_param(request, "direction", required=True)
+        spacing = self.parser.get_param(request, "spacing", required=True)
+        count = self.parser.get_param(request, "count", required=True)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        try:
+            # Get base shape from database
+            cursor = self.database.connection.cursor()
+            cursor.execute(
+                "SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                (base_entity_id, workspace_id)
+            )
+            row = cursor.fetchone()
+
+            if not row or not row[0]:
+                raise ValueError(f"Entity {base_entity_id} has no geometry")
+
+            shape_id = row[0]
+
+            # Retrieve geometry shape
+            cursor.execute(
+                """
+                SELECT shape_id, shape_type, brep_data, is_valid, created_at, workspace_id
+                FROM geometry_shapes
+                WHERE shape_id = ?
+                """,
+                (shape_id,)
+            )
+            shape_row = cursor.fetchone()
+
+            if not shape_row:
+                raise ValueError(f"Shape {shape_id} not found")
+
+            # Reconstruct GeometryShape
+            from ..cad_kernel.geometry_engine import GeometryShape
+            geo_shape = GeometryShape(
+                shape_id=shape_row[0],
+                shape_type=shape_row[1],
+                brep_data=shape_row[2],
+                is_valid=bool(shape_row[3]),
+                created_at=shape_row[4],
+                workspace_id=shape_row[5]
+            )
+
+            base_shape = geo_shape.to_shape()
+
+            # Perform linear pattern operation
+            pattern_results = pattern_ops.linear_pattern(
+                base_shape=base_shape,
+                direction=tuple(direction),
+                spacing=spacing,
+                count=count,
+                workspace_id=workspace_id
+            )
+
+            # Store all pattern copies in database
+            entity_ids = []
+
+            for i, (geo_shape, props) in enumerate(pattern_results):
+                # Store geometry shape
+                shape_dict = geo_shape.to_dict()
+                cursor.execute("""
+                    INSERT INTO geometry_shapes
+                    (shape_id, shape_type, brep_data, is_valid, created_at, workspace_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    shape_dict["shape_id"],
+                    shape_dict["shape_type"],
+                    shape_dict["brep_data"],
+                    shape_dict["is_valid"],
+                    shape_dict["created_at"],
+                    shape_dict["workspace_id"]
+                ))
+
+                # Store entity
+                entity_id = props.entity_id
+                cursor.execute("""
+                    INSERT INTO entities
+                    (entity_id, entity_type, workspace_id, created_at, modified_at,
+                     created_by_agent, parent_entities, child_entities, properties,
+                     bounding_box, is_valid, validation_errors, shape_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    entity_id,
+                    "solid",
+                    workspace_id,
+                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(timezone.utc).isoformat(),
+                    "agent",
+                    json.dumps([]),
+                    json.dumps([]),
+                    json.dumps({"pattern_type": "linear", "pattern_index": i}),
+                    json.dumps({
+                        "min": [props.bounding_box_min_x, props.bounding_box_min_y, props.bounding_box_min_z],
+                        "max": [props.bounding_box_max_x, props.bounding_box_max_y, props.bounding_box_max_z]
+                    }),
+                    1,
+                    None,
+                    geo_shape.shape_id
+                ))
+
+                # Store solid properties
+                props_dict = props.to_dict()
+                cursor.execute("""
+                    INSERT INTO solid_properties
+                    (entity_id, volume, surface_area,
+                     center_of_mass_x, center_of_mass_y, center_of_mass_z,
+                     bounding_box_min_x, bounding_box_min_y, bounding_box_min_z,
+                     bounding_box_max_x, bounding_box_max_y, bounding_box_max_z,
+                     face_count, edge_count, vertex_count,
+                     is_closed, is_manifold, computed_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    props_dict["entity_id"],
+                    props_dict["volume"],
+                    props_dict["surface_area"],
+                    props_dict["center_of_mass_x"],
+                    props_dict["center_of_mass_y"],
+                    props_dict["center_of_mass_z"],
+                    props_dict["bounding_box_min_x"],
+                    props_dict["bounding_box_min_y"],
+                    props_dict["bounding_box_min_z"],
+                    props_dict["bounding_box_max_x"],
+                    props_dict["bounding_box_max_y"],
+                    props_dict["bounding_box_max_z"],
+                    props_dict["face_count"],
+                    props_dict["edge_count"],
+                    props_dict["vertex_count"],
+                    props_dict["is_closed"],
+                    props_dict["is_manifold"],
+                    props_dict["computed_at"]
+                ))
+
+                entity_ids.append(entity_id)
+
+            self.database.connection.commit()
+
+            # Return pattern info
+            return {
+                "entity_ids": entity_ids,
+                "pattern_type": "linear",
+                "count": count
+            }
+
+        except (InvalidGeometryError, OperationFailedError) as e:
+            raise ValueError(str(e))
+
+    def _handle_pattern_circular(self, request) -> dict[str, Any]:
+        """Handle solid.pattern.circular request - create circular pattern around axis."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import pattern_ops
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters
+        base_entity_id = self.parser.get_param(request, "base_entity_id", required=True)
+        axis_point = self.parser.get_param(request, "axis_point", required=True)
+        axis_direction = self.parser.get_param(request, "axis_direction", required=True)
+        count = self.parser.get_param(request, "count", required=True)
+        angle = self.parser.get_param(request, "angle", required=True)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        try:
+            # Get base shape from database (same logic as linear pattern)
+            cursor = self.database.connection.cursor()
+            cursor.execute(
+                "SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                (base_entity_id, workspace_id)
+            )
+            row = cursor.fetchone()
+
+            if not row or not row[0]:
+                raise ValueError(f"Entity {base_entity_id} has no geometry")
+
+            shape_id = row[0]
+
+            # Retrieve geometry shape
+            cursor.execute(
+                """
+                SELECT shape_id, shape_type, brep_data, is_valid, created_at, workspace_id
+                FROM geometry_shapes
+                WHERE shape_id = ?
+                """,
+                (shape_id,)
+            )
+            shape_row = cursor.fetchone()
+
+            if not shape_row:
+                raise ValueError(f"Shape {shape_id} not found")
+
+            from ..cad_kernel.geometry_engine import GeometryShape
+            geo_shape = GeometryShape(
+                shape_id=shape_row[0],
+                shape_type=shape_row[1],
+                brep_data=shape_row[2],
+                is_valid=bool(shape_row[3]),
+                created_at=shape_row[4],
+                workspace_id=shape_row[5]
+            )
+
+            base_shape = geo_shape.to_shape()
+
+            # Perform circular pattern operation
+            pattern_results = pattern_ops.circular_pattern(
+                base_shape=base_shape,
+                axis_point=tuple(axis_point),
+                axis_direction=tuple(axis_direction),
+                count=count,
+                angle=angle,
+                workspace_id=workspace_id
+            )
+
+            # Store all pattern copies (same logic as linear)
+            entity_ids = []
+
+            for i, (geo_shape, props) in enumerate(pattern_results):
+                shape_dict = geo_shape.to_dict()
+                cursor.execute("""
+                    INSERT INTO geometry_shapes
+                    (shape_id, shape_type, brep_data, is_valid, created_at, workspace_id)
+                    VALUES (?, ?, ?, ?, ?, ?)
+                """, (
+                    shape_dict["shape_id"],
+                    shape_dict["shape_type"],
+                    shape_dict["brep_data"],
+                    shape_dict["is_valid"],
+                    shape_dict["created_at"],
+                    shape_dict["workspace_id"]
+                ))
+
+                entity_id = props.entity_id
+                cursor.execute("""
+                    INSERT INTO entities
+                    (entity_id, entity_type, workspace_id, created_at, modified_at,
+                     created_by_agent, parent_entities, child_entities, properties,
+                     bounding_box, is_valid, validation_errors, shape_id)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    entity_id,
+                    "solid",
+                    workspace_id,
+                    datetime.now(timezone.utc).isoformat(),
+                    datetime.now(timezone.utc).isoformat(),
+                    "agent",
+                    json.dumps([]),
+                    json.dumps([]),
+                    json.dumps({"pattern_type": "circular", "pattern_index": i}),
+                    json.dumps({
+                        "min": [props.bounding_box_min_x, props.bounding_box_min_y, props.bounding_box_min_z],
+                        "max": [props.bounding_box_max_x, props.bounding_box_max_y, props.bounding_box_max_z]
+                    }),
+                    1,
+                    None,
+                    geo_shape.shape_id
+                ))
+
+                props_dict = props.to_dict()
+                cursor.execute("""
+                    INSERT INTO solid_properties
+                    (entity_id, volume, surface_area,
+                     center_of_mass_x, center_of_mass_y, center_of_mass_z,
+                     bounding_box_min_x, bounding_box_min_y, bounding_box_min_z,
+                     bounding_box_max_x, bounding_box_max_y, bounding_box_max_z,
+                     face_count, edge_count, vertex_count,
+                     is_closed, is_manifold, computed_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    props_dict["entity_id"],
+                    props_dict["volume"],
+                    props_dict["surface_area"],
+                    props_dict["center_of_mass_x"],
+                    props_dict["center_of_mass_y"],
+                    props_dict["center_of_mass_z"],
+                    props_dict["bounding_box_min_x"],
+                    props_dict["bounding_box_min_y"],
+                    props_dict["bounding_box_min_z"],
+                    props_dict["bounding_box_max_x"],
+                    props_dict["bounding_box_max_y"],
+                    props_dict["bounding_box_max_z"],
+                    props_dict["face_count"],
+                    props_dict["edge_count"],
+                    props_dict["vertex_count"],
+                    props_dict["is_closed"],
+                    props_dict["is_manifold"],
+                    props_dict["computed_at"]
+                ))
+
+                entity_ids.append(entity_id)
+
+            self.database.connection.commit()
+
+            return {
+                "entity_ids": entity_ids,
+                "pattern_type": "circular",
+                "count": count
+            }
+
+        except (InvalidGeometryError, OperationFailedError) as e:
+            raise ValueError(str(e))
+
+    def _handle_solid_mirror(self, request) -> dict[str, Any]:
+        """Handle solid.mirror request - create mirrored copy across plane."""
+        import json
+        from datetime import datetime, timezone
+        from ..cad_kernel import pattern_ops
+        from ..cad_kernel.exceptions import InvalidGeometryError, OperationFailedError
+
+        # Parse parameters
+        base_entity_id = self.parser.get_param(request, "base_entity_id", required=True)
+        mirror_plane_point = self.parser.get_param(request, "mirror_plane_point", required=True)
+        mirror_plane_normal = self.parser.get_param(request, "mirror_plane_normal", required=True)
+        workspace_id = self.parser.get_param(request, "workspace_id", default=None)
+
+        if workspace_id is None:
+            workspace_id = self._get_active_workspace_id()
+
+        try:
+            # Get base shape from database
+            cursor = self.database.connection.cursor()
+            cursor.execute(
+                "SELECT shape_id FROM entities WHERE entity_id = ? AND workspace_id = ?",
+                (base_entity_id, workspace_id)
+            )
+            row = cursor.fetchone()
+
+            if not row or not row[0]:
+                raise ValueError(f"Entity {base_entity_id} has no geometry")
+
+            shape_id = row[0]
+
+            # Retrieve geometry shape
+            cursor.execute(
+                """
+                SELECT shape_id, shape_type, brep_data, is_valid, created_at, workspace_id
+                FROM geometry_shapes
+                WHERE shape_id = ?
+                """,
+                (shape_id,)
+            )
+            shape_row = cursor.fetchone()
+
+            if not shape_row:
+                raise ValueError(f"Shape {shape_id} not found")
+
+            from ..cad_kernel.geometry_engine import GeometryShape
+            geo_shape = GeometryShape(
+                shape_id=shape_row[0],
+                shape_type=shape_row[1],
+                brep_data=shape_row[2],
+                is_valid=bool(shape_row[3]),
+                created_at=shape_row[4],
+                workspace_id=shape_row[5]
+            )
+
+            base_shape = geo_shape.to_shape()
+
+            # Perform mirror operation
+            mirrored_geo_shape, mirrored_props = pattern_ops.mirror_shape(
+                base_shape=base_shape,
+                mirror_plane_point=tuple(mirror_plane_point),
+                mirror_plane_normal=tuple(mirror_plane_normal),
+                workspace_id=workspace_id
+            )
+
+            # Store mirrored shape in database
+            shape_dict = mirrored_geo_shape.to_dict()
+            cursor.execute("""
+                INSERT INTO geometry_shapes
+                (shape_id, shape_type, brep_data, is_valid, created_at, workspace_id)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (
+                shape_dict["shape_id"],
+                shape_dict["shape_type"],
+                shape_dict["brep_data"],
+                shape_dict["is_valid"],
+                shape_dict["created_at"],
+                shape_dict["workspace_id"]
+            ))
+
+            entity_id = mirrored_props.entity_id
+            cursor.execute("""
+                INSERT INTO entities
+                (entity_id, entity_type, workspace_id, created_at, modified_at,
+                 created_by_agent, parent_entities, child_entities, properties,
+                 bounding_box, is_valid, validation_errors, shape_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                entity_id,
+                "solid",
+                workspace_id,
+                datetime.now(timezone.utc).isoformat(),
+                datetime.now(timezone.utc).isoformat(),
+                "agent",
+                json.dumps([]),
+                json.dumps([]),
+                json.dumps({"operation": "mirror"}),
+                json.dumps({
+                    "min": [mirrored_props.bounding_box_min_x, mirrored_props.bounding_box_min_y, mirrored_props.bounding_box_min_z],
+                    "max": [mirrored_props.bounding_box_max_x, mirrored_props.bounding_box_max_y, mirrored_props.bounding_box_max_z]
+                }),
+                1,
+                None,
+                mirrored_geo_shape.shape_id
+            ))
+
+            props_dict = mirrored_props.to_dict()
+            cursor.execute("""
+                INSERT INTO solid_properties
+                (entity_id, volume, surface_area,
+                 center_of_mass_x, center_of_mass_y, center_of_mass_z,
+                 bounding_box_min_x, bounding_box_min_y, bounding_box_min_z,
+                 bounding_box_max_x, bounding_box_max_y, bounding_box_max_z,
+                 face_count, edge_count, vertex_count,
+                 is_closed, is_manifold, computed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                props_dict["entity_id"],
+                props_dict["volume"],
+                props_dict["surface_area"],
+                props_dict["center_of_mass_x"],
+                props_dict["center_of_mass_y"],
+                props_dict["center_of_mass_z"],
+                props_dict["bounding_box_min_x"],
+                props_dict["bounding_box_min_y"],
+                props_dict["bounding_box_min_z"],
+                props_dict["bounding_box_max_x"],
+                props_dict["bounding_box_max_y"],
+                props_dict["bounding_box_max_z"],
+                props_dict["face_count"],
+                props_dict["edge_count"],
+                props_dict["vertex_count"],
+                props_dict["is_closed"],
+                props_dict["is_manifold"],
+                props_dict["computed_at"]
+            ))
+
+            self.database.connection.commit()
+
+            # Return mirrored entity
+            return {
+                "entity_id": entity_id,
+                "volume": mirrored_props.volume,
+                "surface_area": mirrored_props.surface_area,
+                "center_of_mass": [
+                    mirrored_props.center_of_mass_x,
+                    mirrored_props.center_of_mass_y,
+                    mirrored_props.center_of_mass_z
+                ],
+                "bounding_box": {
+                    "min": [mirrored_props.bounding_box_min_x, mirrored_props.bounding_box_min_y, mirrored_props.bounding_box_min_z],
+                    "max": [mirrored_props.bounding_box_max_x, mirrored_props.bounding_box_max_y, mirrored_props.bounding_box_max_z]
+                },
+                "topology": {
+                    "face_count": mirrored_props.face_count,
+                    "edge_count": mirrored_props.edge_count,
+                    "vertex_count": mirrored_props.vertex_count,
+                    "is_closed": mirrored_props.is_closed,
+                    "is_manifold": mirrored_props.is_manifold
+                }
+            }
+
+        except (InvalidGeometryError, OperationFailedError) as e:
+            raise ValueError(str(e))
 
 
 def main():

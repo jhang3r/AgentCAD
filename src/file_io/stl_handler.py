@@ -1,110 +1,150 @@
-"""STL format export for CAD solids.
+"""STL format export for CAD solids using real tessellation.
 
 STL (STereoLithography) is a triangulated mesh format widely used for 3D printing.
+This implementation uses Open CASCADE's tessellation engine to generate real geometry.
 """
-import math
+import struct
 from pathlib import Path
-from typing import Any
+from typing import List, Any, Dict
+
+from OCC.Core.TopoDS import TopoDS_Shape
+
+# Import tessellation utilities from cad_kernel
+import sys
+from pathlib import Path as PathLib
+sys.path.insert(0, str(PathLib(__file__).parent.parent))
+from cad_kernel.tessellation import MeshGenerator, TessellationConfig, Triangle
 
 
-def export_stl(solids: list[dict[str, Any]], file_path: str, ascii_format: bool = False) -> dict[str, Any]:
-    """Export solids to STL format.
+def export_stl(
+    shapes: List[TopoDS_Shape],
+    file_path: str,
+    tessellation_quality: str = "standard",
+    ascii_format: bool = False
+) -> Dict[str, Any]:
+    """Export solids to STL format with real tessellation.
 
     Args:
-        solids: List of solid dictionaries with topology
-        file_path: Output file path
+        shapes: List of TopoDS_Shape objects to export
+        file_path: Output file path (.stl)
+        tessellation_quality: Quality preset (preview, standard, high_quality)
         ascii_format: If True, write ASCII STL; otherwise binary
 
     Returns:
         Export report with statistics
+
+    Raises:
+        ValueError: If invalid quality preset
+        RuntimeError: If tessellation or file write fails
     """
     output_path = Path(file_path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # For simplicity, create a basic tessellation
-    # In a real implementation, this would use OCCT's tessellation
-    triangles = []
+    # Ensure .stl extension
+    if output_path.suffix.lower() != '.stl':
+        output_path = output_path.with_suffix('.stl')
 
-    for solid in solids:
-        # Generate simple tessellation based on geometry
-        # This is a placeholder - real OCCT would provide actual mesh
-        if "volume" in solid and "surface_area" in solid:
-            # Approximate triangle count from surface area
-            # Assuming average triangle size of 1 square unit
-            triangle_count = max(8, int(solid["surface_area"] / 1.0))
+    # Get tessellation config
+    try:
+        config = TessellationConfig.from_name(tessellation_quality)
+    except ValueError as e:
+        raise ValueError(f"Invalid tessellation quality: {e}")
 
-            # Generate dummy triangles (in real impl, from OCCT mesh)
-            for i in range(triangle_count):
-                triangles.append({
-                    "normal": [0.0, 0.0, 1.0],
-                    "vertices": [
-                        [0.0, 0.0, 0.0],
-                        [1.0, 0.0, 0.0],
-                        [0.5, 1.0, 0.0]
-                    ]
-                })
+    # Tessellate all shapes and collect triangles
+    all_triangles: List[Triangle] = []
+
+    for shape in shapes:
+        triangles = MeshGenerator.tessellate_shape(shape, config)
+        all_triangles.extend(triangles)
+
+    if not all_triangles:
+        raise RuntimeError("Tessellation produced no triangles - shapes may be invalid")
 
     # Write STL file
     if ascii_format:
-        _write_ascii_stl(output_path, triangles)
+        _write_ascii_stl(output_path, all_triangles)
     else:
-        _write_binary_stl(output_path, triangles)
+        _write_binary_stl(output_path, all_triangles)
 
     file_size = output_path.stat().st_size
 
     return {
-        "file_path": str(output_path),
+        "file_path": str(output_path.absolute()),
         "format": "stl",
-        "entity_count": len(solids),
-        "triangle_count": len(triangles),
+        "entity_count": len(shapes),
+        "triangle_count": len(all_triangles),
         "file_size": file_size,
+        "tessellation_config": {
+            "linear_deflection": config.linear_deflection,
+            "angular_deflection": config.angular_deflection,
+            "quality": config.name
+        },
         "data_loss": True,  # STL loses exact geometry (only mesh)
-        "warnings": [
+        "notes": [
             "STL format is triangulated mesh - exact geometry information is lost",
-            "Consider using STEP format for preserving exact geometry"
+            "Suitable for 3D printing and visualization",
+            "For CAD-to-CAD exchange, use STEP format instead"
         ]
     }
 
 
-def _write_ascii_stl(file_path: Path, triangles: list[dict]) -> None:
-    """Write ASCII STL file."""
+def _write_ascii_stl(file_path: Path, triangles: List[Triangle]) -> None:
+    """Write ASCII STL file.
+
+    Args:
+        file_path: Output file path
+        triangles: List of Triangle objects
+    """
     with open(file_path, 'w') as f:
         f.write("solid exported\n")
-        for tri in triangles:
-            normal = tri["normal"]
-            vertices = tri["vertices"]
 
-            f.write(f"  facet normal {normal[0]} {normal[1]} {normal[2]}\n")
+        for tri in triangles:
+            normal = tri.normal
+            vertices = tri.vertices
+
+            f.write(f"  facet normal {normal[0]:.6e} {normal[1]:.6e} {normal[2]:.6e}\n")
             f.write("    outer loop\n")
             for vertex in vertices:
-                f.write(f"      vertex {vertex[0]} {vertex[1]} {vertex[2]}\n")
+                f.write(f"      vertex {vertex[0]:.6e} {vertex[1]:.6e} {vertex[2]:.6e}\n")
             f.write("    endloop\n")
             f.write("  endfacet\n")
+
         f.write("endsolid exported\n")
 
 
-def _write_binary_stl(file_path: Path, triangles: list[dict]) -> None:
-    """Write binary STL file."""
-    import struct
+def _write_binary_stl(file_path: Path, triangles: List[Triangle]) -> None:
+    """Write binary STL file.
 
+    Binary STL format (little-endian):
+    - Header: 80 bytes (arbitrary text)
+    - Triangle count: 4 bytes (uint32)
+    - For each triangle (50 bytes):
+      - Normal: 12 bytes (3 x float32)
+      - Vertex 1: 12 bytes (3 x float32)
+      - Vertex 2: 12 bytes (3 x float32)
+      - Vertex 3: 12 bytes (3 x float32)
+      - Attribute: 2 bytes (uint16, usually 0)
+
+    Args:
+        file_path: Output file path
+        triangles: List of Triangle objects
+    """
     with open(file_path, 'wb') as f:
-        # Header (80 bytes)
-        header = b'Binary STL exported by CAD system' + b' ' * (80 - 34)
+        # Header (80 bytes) - include generator info
+        header_text = "Binary STL - Generated by CAD System with Open CASCADE"
+        header = header_text.encode('ascii')[:80].ljust(80, b' ')
         f.write(header)
 
-        # Triangle count (4 bytes)
+        # Triangle count (4 bytes, unsigned int, little-endian)
         f.write(struct.pack('<I', len(triangles)))
 
-        # Triangles
+        # Write each triangle (50 bytes each)
         for tri in triangles:
-            normal = tri["normal"]
-            vertices = tri["vertices"]
+            # Normal vector (3 floats, 12 bytes)
+            f.write(struct.pack('<fff', *tri.normal))
 
-            # Normal vector (3 floats)
-            f.write(struct.pack('<fff', *normal))
-
-            # Vertices (3 * 3 floats)
-            for vertex in vertices:
+            # Three vertices (9 floats, 36 bytes total)
+            for vertex in tri.vertices:
                 f.write(struct.pack('<fff', *vertex))
 
             # Attribute byte count (2 bytes, usually 0)
