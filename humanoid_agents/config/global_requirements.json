@@ -1,0 +1,25 @@
+{
+  "physical": {
+    "height_m": 1.75,
+    "mass_kg_max": 45.0,
+    "width_shoulders_m": 0.45,
+    "width_hips_m": 0.35
+  },
+  "performance": {
+    "walking_speed_ms": 1.5,
+    "payload_capacity_kg": 5.0,
+    "battery_life_hours": 4.0,
+    "degrees_of_freedom": 30
+  },
+  "constraints": {
+    "cost_usd_max": 15000,
+    "manufacturing_method": "CNC_milling_and_3D_printing",
+    "material_primary": "aluminum_6061",
+    "assembly_time_hours_max": 20
+  },
+  "safety": {
+    "stability_margin": 0.05,
+    "max_joint_torque_nm": 100,
+    "emergency_stop_required": true
+  }
+}

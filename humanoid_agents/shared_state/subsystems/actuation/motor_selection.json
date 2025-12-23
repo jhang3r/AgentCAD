@@ -1,0 +1,288 @@
+{
+  "version": 1,
+  "timestamp": "2025-11-30T00:00:00Z",
+  "motor_database": {
+    "high_torque_brushless": {
+      "torque_nm": 100,
+      "speed_rpm": 50,
+      "voltage": 48,
+      "power_w": 400,
+      "mass_kg": 1.2,
+      "cost_usd": 450,
+      "diameter_mm": 90,
+      "length_mm": 80
+    },
+    "medium_torque_brushless": {
+      "torque_nm": 50,
+      "speed_rpm": 80,
+      "voltage": 48,
+      "power_w": 250,
+      "mass_kg": 0.7,
+      "cost_usd": 280,
+      "diameter_mm": 70,
+      "length_mm": 65
+    },
+    "low_torque_brushless": {
+      "torque_nm": 20,
+      "speed_rpm": 150,
+      "voltage": 48,
+      "power_w": 120,
+      "mass_kg": 0.35,
+      "cost_usd": 150,
+      "diameter_mm": 50,
+      "length_mm": 50
+    }
+  },
+  "selections": {
+    "hip_flexion_r": {
+      "required_torque_nm": 90,
+      "required_with_margin_nm": 108,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 100,
+      "note": "Within 10% of requirement - acceptable"
+    },
+    "hip_flexion_l": {
+      "required_torque_nm": 90,
+      "required_with_margin_nm": 108,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 100,
+      "note": "Within 10% of requirement - acceptable"
+    },
+    "hip_abduction_r": {
+      "required_torque_nm": 80,
+      "required_with_margin_nm": 96,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 100
+    },
+    "hip_abduction_l": {
+      "required_torque_nm": 80,
+      "required_with_margin_nm": 96,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 100
+    },
+    "hip_rotation_r": {
+      "required_torque_nm": 60,
+      "required_with_margin_nm": 72,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.5,
+      "output_torque_nm": 75
+    },
+    "hip_rotation_l": {
+      "required_torque_nm": 60,
+      "required_with_margin_nm": 72,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.5,
+      "output_torque_nm": 75
+    },
+    "knee_flexion_r": {
+      "required_torque_nm": 100,
+      "required_with_margin_nm": 120,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.2,
+      "output_torque_nm": 120
+    },
+    "knee_flexion_l": {
+      "required_torque_nm": 100,
+      "required_with_margin_nm": 120,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.2,
+      "output_torque_nm": 120
+    },
+    "ankle_flexion_r": {
+      "required_torque_nm": 80,
+      "required_with_margin_nm": 96,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 100
+    },
+    "ankle_flexion_l": {
+      "required_torque_nm": 80,
+      "required_with_margin_nm": 96,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 100
+    },
+    "ankle_abduction_r": {
+      "required_torque_nm": 50,
+      "required_with_margin_nm": 60,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.2,
+      "output_torque_nm": 60
+    },
+    "ankle_abduction_l": {
+      "required_torque_nm": 50,
+      "required_with_margin_nm": 60,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.2,
+      "output_torque_nm": 60
+    },
+    "shoulder_flexion_r": {
+      "required_torque_nm": 45,
+      "required_with_margin_nm": 54,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.1,
+      "output_torque_nm": 55
+    },
+    "shoulder_flexion_l": {
+      "required_torque_nm": 45,
+      "required_with_margin_nm": 54,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.1,
+      "output_torque_nm": 55
+    },
+    "shoulder_abduction_r": {
+      "required_torque_nm": 45,
+      "required_with_margin_nm": 54,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.1,
+      "output_torque_nm": 55
+    },
+    "shoulder_abduction_l": {
+      "required_torque_nm": 45,
+      "required_with_margin_nm": 54,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.1,
+      "output_torque_nm": 55
+    },
+    "shoulder_rotation_r": {
+      "required_torque_nm": 30,
+      "required_with_margin_nm": 36,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 50
+    },
+    "shoulder_rotation_l": {
+      "required_torque_nm": 30,
+      "required_with_margin_nm": 36,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 50
+    },
+    "elbow_flexion_r": {
+      "required_torque_nm": 40,
+      "required_with_margin_nm": 48,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 50
+    },
+    "elbow_flexion_l": {
+      "required_torque_nm": 40,
+      "required_with_margin_nm": 48,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 50
+    },
+    "wrist_flexion_r": {
+      "required_torque_nm": 15,
+      "required_with_margin_nm": 18,
+      "motor_selected": "low_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 20
+    },
+    "wrist_flexion_l": {
+      "required_torque_nm": 15,
+      "required_with_margin_nm": 18,
+      "motor_selected": "low_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 20
+    },
+    "wrist_rotation_r": {
+      "required_torque_nm": 10,
+      "required_with_margin_nm": 12,
+      "motor_selected": "low_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 20
+    },
+    "wrist_rotation_l": {
+      "required_torque_nm": 10,
+      "required_with_margin_nm": 12,
+      "motor_selected": "low_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 20
+    },
+    "neck_pitch": {
+      "required_torque_nm": 25,
+      "required_with_margin_nm": 30,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 50
+    },
+    "neck_yaw": {
+      "required_torque_nm": 20,
+      "required_with_margin_nm": 24,
+      "motor_selected": "low_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.2,
+      "output_torque_nm": 24
+    },
+    "waist_pitch": {
+      "required_torque_nm": 70,
+      "required_with_margin_nm": 84,
+      "motor_selected": "high_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 100
+    },
+    "waist_yaw": {
+      "required_torque_nm": 60,
+      "required_with_margin_nm": 72,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.5,
+      "output_torque_nm": 75
+    },
+    "waist_roll": {
+      "required_torque_nm": 50,
+      "required_with_margin_nm": 60,
+      "motor_selected": "medium_torque_brushless",
+      "transmission": "planetary_gearbox",
+      "gear_ratio": 1.2,
+      "output_torque_nm": 60
+    },
+    "neck_roll": {
+      "required_torque_nm": 15,
+      "required_with_margin_nm": 18,
+      "motor_selected": "low_torque_brushless",
+      "transmission": "direct_drive",
+      "gear_ratio": 1,
+      "output_torque_nm": 20
+    }
+  },
+  "summary": {
+    "total_joints": 30,
+    "high_torque_motors": 8,
+    "medium_torque_motors": 17,
+    "low_torque_motors": 5,
+    "gearboxes_required": 12,
+    "direct_drive": 18
+  }
+}

@@ -1,0 +1,453 @@
+{
+  "interface_version": "1.0",
+  "coordinate_system": "Right-handed, Z-up, origin at ground level between feet",
+  "units": {
+    "position": "meters",
+    "angles": "radians",
+    "dimensions": "millimeters"
+  },
+  "joints": {
+    "hip_flexion_left": {
+      "position": [0.14, 0, 0.93],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-1.57, 2.09],
+      "bearing_bore_mm": 30,
+      "bearing_od_mm": 42,
+      "bearing_width_mm": 7,
+      "bearing_model": "6806",
+      "torque_capacity_Nm": 150,
+      "motor_mount": "hip_flexion_left_motor_mount"
+    },
+    "hip_flexion_right": {
+      "position": [-0.14, 0, 0.93],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-1.57, 2.09],
+      "bearing_bore_mm": 30,
+      "bearing_od_mm": 42,
+      "bearing_width_mm": 7,
+      "bearing_model": "6806",
+      "torque_capacity_Nm": 150,
+      "motor_mount": "hip_flexion_right_motor_mount"
+    },
+    "hip_abduction_left": {
+      "position": [0.14, 0, 0.93],
+      "type": "revolute",
+      "axis": [0, 1, 0],
+      "range_rad": [-0.79, 0.79],
+      "bearing_bore_mm": 25,
+      "bearing_od_mm": 37,
+      "bearing_width_mm": 7,
+      "bearing_model": "6805",
+      "torque_capacity_Nm": 80,
+      "motor_mount": "hip_abduction_left_motor_mount"
+    },
+    "hip_abduction_right": {
+      "position": [-0.14, 0, 0.93],
+      "type": "revolute",
+      "axis": [0, 1, 0],
+      "range_rad": [-0.79, 0.79],
+      "bearing_bore_mm": 25,
+      "bearing_od_mm": 37,
+      "bearing_width_mm": 7,
+      "bearing_model": "6805",
+      "torque_capacity_Nm": 80,
+      "motor_mount": "hip_abduction_right_motor_mount"
+    },
+    "knee_left": {
+      "position": [0.14, 0, 0.48],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [0, 2.36],
+      "bearing_bore_mm": 25,
+      "bearing_od_mm": 37,
+      "bearing_width_mm": 7,
+      "bearing_model": "6805",
+      "torque_capacity_Nm": 100,
+      "motor_mount": "knee_left_motor_mount"
+    },
+    "knee_right": {
+      "position": [-0.14, 0, 0.48],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [0, 2.36],
+      "bearing_bore_mm": 25,
+      "bearing_od_mm": 37,
+      "bearing_width_mm": 7,
+      "bearing_model": "6805",
+      "torque_capacity_Nm": 100,
+      "motor_mount": "knee_right_motor_mount"
+    },
+    "ankle_pitch_left": {
+      "position": [0.14, 0, 0.08],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-0.52, 0.52],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 50,
+      "motor_mount": "ankle_pitch_left_motor_mount"
+    },
+    "ankle_pitch_right": {
+      "position": [-0.14, 0, 0.08],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-0.52, 0.52],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 50,
+      "motor_mount": "ankle_pitch_right_motor_mount"
+    },
+    "shoulder_flexion_left": {
+      "position": [0.20, 0, 1.45],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-3.14, 3.14],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 40,
+      "motor_mount": "shoulder_flexion_left_motor_mount"
+    },
+    "shoulder_flexion_right": {
+      "position": [-0.20, 0, 1.45],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-3.14, 3.14],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 40,
+      "motor_mount": "shoulder_flexion_right_motor_mount"
+    },
+    "shoulder_abduction_left": {
+      "position": [0.20, 0, 1.45],
+      "type": "revolute",
+      "axis": [0, 1, 0],
+      "range_rad": [-1.57, 1.57],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 40,
+      "motor_mount": "shoulder_abduction_left_motor_mount"
+    },
+    "shoulder_abduction_right": {
+      "position": [-0.20, 0, 1.45],
+      "type": "revolute",
+      "axis": [0, 1, 0],
+      "range_rad": [-1.57, 1.57],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 40,
+      "motor_mount": "shoulder_abduction_right_motor_mount"
+    },
+    "elbow_left": {
+      "position": [0.20, 0, 1.15],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [0, 2.62],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 30,
+      "motor_mount": "elbow_left_motor_mount"
+    },
+    "elbow_right": {
+      "position": [-0.20, 0, 1.15],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [0, 2.62],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 30,
+      "motor_mount": "elbow_right_motor_mount"
+    },
+    "wrist_pitch_left": {
+      "position": [0.20, 0, 0.87],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-1.57, 1.57],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 20,
+      "motor_mount": "wrist_pitch_left_motor_mount"
+    },
+    "wrist_pitch_right": {
+      "position": [-0.20, 0, 0.87],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-1.57, 1.57],
+      "bearing_bore_mm": 20,
+      "bearing_od_mm": 32,
+      "bearing_width_mm": 7,
+      "bearing_model": "6804",
+      "torque_capacity_Nm": 20,
+      "motor_mount": "wrist_pitch_right_motor_mount"
+    },
+    "waist_pitch": {
+      "position": [0, 0, 1.06],
+      "type": "revolute",
+      "axis": [1, 0, 0],
+      "range_rad": [-0.52, 0.52],
+      "bearing_bore_mm": 25,
+      "bearing_od_mm": 37,
+      "bearing_width_mm": 7,
+      "bearing_model": "6805",
+      "torque_capacity_Nm": 80,
+      "motor_mount": "waist_pitch_motor_mount"
+    },
+    "waist_yaw": {
+      "position": [0, 0, 1.06],
+      "type": "revolute",
+      "axis": [0, 0, 1],
+      "range_rad": [-1.57, 1.57],
+      "bearing_bore_mm": 25,
+      "bearing_od_mm": 37,
+      "bearing_width_mm": 7,
+      "bearing_model": "6805",
+      "torque_capacity_Nm": 60,
+      "motor_mount": "waist_yaw_motor_mount"
+    }
+  },
+  "mounting_points": {
+    "hip_flexion_left_motor_mount": {
+      "position": [0.14, 0, 0.93],
+      "normal": [1, 0, 0],
+      "hole_count": 6,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 50,
+      "bolt_type": "M5",
+      "notes": "Primary motor attachment for hip flexion"
+    },
+    "hip_flexion_right_motor_mount": {
+      "position": [-0.14, 0, 0.93],
+      "normal": [1, 0, 0],
+      "hole_count": 6,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 50,
+      "bolt_type": "M5"
+    },
+    "hip_abduction_left_motor_mount": {
+      "position": [0.14, 0, 0.93],
+      "normal": [0, 1, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 42,
+      "bolt_type": "M5"
+    },
+    "hip_abduction_right_motor_mount": {
+      "position": [-0.14, 0, 0.93],
+      "normal": [0, 1, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 42,
+      "bolt_type": "M5"
+    },
+    "knee_left_motor_mount": {
+      "position": [0.14, 0, 0.48],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 42,
+      "bolt_type": "M5"
+    },
+    "knee_right_motor_mount": {
+      "position": [-0.14, 0, 0.48],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 42,
+      "bolt_type": "M5"
+    },
+    "ankle_pitch_left_motor_mount": {
+      "position": [0.14, 0, 0.08],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "ankle_pitch_right_motor_mount": {
+      "position": [-0.14, 0, 0.08],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "shoulder_flexion_left_motor_mount": {
+      "position": [0.20, 0, 1.45],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "shoulder_flexion_right_motor_mount": {
+      "position": [-0.20, 0, 1.45],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "shoulder_abduction_left_motor_mount": {
+      "position": [0.20, 0, 1.45],
+      "normal": [0, 1, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "shoulder_abduction_right_motor_mount": {
+      "position": [-0.20, 0, 1.45],
+      "normal": [0, 1, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "elbow_left_motor_mount": {
+      "position": [0.20, 0, 1.15],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "elbow_right_motor_mount": {
+      "position": [-0.20, 0, 1.15],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "wrist_pitch_left_motor_mount": {
+      "position": [0.20, 0, 0.87],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "wrist_pitch_right_motor_mount": {
+      "position": [-0.20, 0, 0.87],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 4,
+      "bolt_circle_diameter_mm": 36,
+      "bolt_type": "M4"
+    },
+    "waist_pitch_motor_mount": {
+      "position": [0, 0, 1.06],
+      "normal": [1, 0, 0],
+      "hole_count": 4,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 42,
+      "bolt_type": "M5"
+    },
+    "waist_yaw_motor_mount": {
+      "position": [0, 0, 1.06],
+      "normal": [0, 0, 1],
+      "hole_count": 4,
+      "hole_diameter_mm": 5,
+      "bolt_circle_diameter_mm": 42,
+      "bolt_type": "M5"
+    }
+  },
+  "sensor_mounting_points": {
+    "pelvis_imu": {
+      "position": [0, 0, 0.93],
+      "normal": [0, 0, 1],
+      "hole_count": 4,
+      "hole_diameter_mm": 3,
+      "hole_spacing_mm": 20,
+      "bolt_type": "M3"
+    },
+    "torso_imu": {
+      "position": [0, 0, 1.32],
+      "normal": [0, 0, 1],
+      "hole_count": 4,
+      "hole_diameter_mm": 3,
+      "hole_spacing_mm": 20,
+      "bolt_type": "M3"
+    }
+  },
+  "cable_routing": {
+    "spine_central_channel": {
+      "path": "Pelvis to shoulder structure",
+      "diameter_mm": 25,
+      "length_m": 0.52,
+      "capacity": "Power and data cables for upper body"
+    },
+    "leg_channels_left": {
+      "path": "Hip to ankle",
+      "diameter_mm": 15,
+      "length_m": 0.88,
+      "capacity": "Motor power and encoder signals"
+    },
+    "leg_channels_right": {
+      "path": "Hip to ankle",
+      "diameter_mm": 15,
+      "length_m": 0.88,
+      "capacity": "Motor power and encoder signals"
+    }
+  },
+  "mass_properties": {
+    "total_mass_kg": 8.179,
+    "center_of_mass": [0, 0, 0.95],
+    "moment_of_inertia_kg_m2": {
+      "Ixx": 0.85,
+      "Iyy": 0.45,
+      "Izz": 0.52
+    }
+  },
+  "requirements_for_other_subsystems": {
+    "actuation": {
+      "motor_count_required": 18,
+      "torque_requirements": {
+        "hip_flexion_Nm": 150,
+        "hip_abduction_Nm": 80,
+        "knee_Nm": 100,
+        "ankle_Nm": 50,
+        "shoulder_flexion_Nm": 40,
+        "shoulder_abduction_Nm": 40,
+        "elbow_Nm": 30,
+        "wrist_Nm": 20,
+        "waist_pitch_Nm": 80,
+        "waist_yaw_Nm": 60
+      }
+    },
+    "power": {
+      "mounting_location": "Torso cavity",
+      "available_volume_m3": 0.012,
+      "recommended_position": [0, 0, 1.2]
+    },
+    "sensing": {
+      "encoder_mounting_interfaces": 18,
+      "imu_mounting_points": 2,
+      "force_sensor_locations": ["foot_plate_left", "foot_plate_right"]
+    },
+    "shell": {
+      "attachment_points": "Regular grid on bones every 100mm",
+      "clearance_required_mm": 30,
+      "total_exterior_area_m2": 1.2
+    }
+  }
+}

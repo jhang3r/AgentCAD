@@ -1,0 +1,77 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Logs
+*.log
+logs/
+humanoid_agents/shared_state/logs/
+
+# Shared state (optional - comment out if you want to track state)
+# humanoid_agents/shared_state/subsystems/*/status.json
+# humanoid_agents/shared_state/subsystems/*/design.json
+# humanoid_agents/shared_state/subsystems/*/interfaces.json
+# humanoid_agents/shared_state/conflicts/active.json
+
+# CAD files (large)
+*.step
+*.STEP
+*.stp
+*.STP
+*.stl
+*.STL
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
+.cache/
+
+# OS
+Thumbs.db
+.DS_Store

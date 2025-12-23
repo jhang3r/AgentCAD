@@ -1,0 +1,9 @@
+# Core dependencies for AI-powered multi-agent system
+anthropic>=0.39.0
+python-dotenv>=1.0.0
+
+# Optional: OOCCT for geometry generation (install via conda)
+# pythonocc-core
+
+# Development/monitoring
+colorama>=0.4.6

@@ -1,0 +1,62 @@
+{
+  "foot_plates": {
+    "foot_plate_left": {
+      "component_name": "Foot Plate Left",
+      "length_m": 0.24,
+      "width_m": 0.10,
+      "thickness_m": 0.008,
+      "material": "Aluminum 6061-T6",
+      "volume_m3": 1.92e-4,
+      "mass_kg": 0.518,
+      "cost_usd": 7.77,
+      "mounting_holes": 6,
+      "notes": "Ground contact plate with rubber padding interface"
+    },
+    "foot_plate_right": {
+      "component_name": "Foot Plate Right",
+      "length_m": 0.24,
+      "width_m": 0.10,
+      "thickness_m": 0.008,
+      "material": "Aluminum 6061-T6",
+      "volume_m3": 1.92e-4,
+      "mass_kg": 0.518,
+      "cost_usd": 7.77,
+      "mounting_holes": 6,
+      "notes": "Ground contact plate with rubber padding interface"
+    }
+  },
+  "mounting_brackets": {
+    "motor_mounting_brackets": {
+      "component_name": "Motor Mounting Brackets",
+      "quantity": 18,
+      "unit_mass_kg": 0.045,
+      "total_mass_kg": 0.810,
+      "unit_cost_usd": 3.50,
+      "total_cost_usd": 63.00,
+      "notes": "Aluminum brackets for motor-to-joint attachment"
+    },
+    "sensor_mounting_brackets": {
+      "component_name": "Sensor Mounting Brackets",
+      "quantity": 12,
+      "unit_mass_kg": 0.025,
+      "total_mass_kg": 0.300,
+      "unit_cost_usd": 2.00,
+      "total_cost_usd": 24.00,
+      "notes": "Small brackets for IMU and encoder mounting"
+    }
+  },
+  "fasteners": {
+    "bolts_and_nuts": {
+      "component_name": "Bolts, Nuts, Washers",
+      "description": "M4 and M5 hardware throughout skeleton",
+      "estimated_quantity": 200,
+      "total_mass_kg": 0.350,
+      "total_cost_usd": 50.00,
+      "notes": "Includes safety wire provisions"
+    }
+  },
+  "additional_summary": {
+    "total_additional_mass_kg": 2.496,
+    "total_additional_cost_usd": 152.54
+  }
+}

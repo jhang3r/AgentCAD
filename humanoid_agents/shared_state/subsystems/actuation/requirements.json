@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "timestamp": "2025-11-30T00:00:00Z",
+  "source": "actuation_designer",
+  "note": "Generated baseline requirements from global_requirements.json - 30 DOF humanoid",
+  "joint_requirements": {
+    "hip_flexion_r": {
+      "torque_nm": 90,
+      "speed_rpm": 60,
+      "range_deg": 120,
+      "description": "Right hip pitch"
+    },
+    "hip_flexion_l": {
+      "torque_nm": 90,
+      "speed_rpm": 60,
+      "range_deg": 120,
+      "description": "Left hip pitch"
+    },
+    "hip_abduction_r": {
+      "torque_nm": 80,
+      "speed_rpm": 60,
+      "range_deg": 90,
+      "description": "Right hip roll"
+    },
+    "hip_abduction_l": {
+      "torque_nm": 80,
+      "speed_rpm": 60,
+      "range_deg": 90,
+      "description": "Left hip roll"
+    },
+    "hip_rotation_r": {
+      "torque_nm": 60,
+      "speed_rpm": 80,
+      "range_deg": 90,
+      "description": "Right hip yaw"
+    },
+    "hip_rotation_l": {
+      "torque_nm": 60,
+      "speed_rpm": 80,
+      "range_deg": 90,
+      "description": "Left hip yaw"
+    },
+    "knee_flexion_r": {
+      "torque_nm": 100,
+      "speed_rpm": 60,
+      "range_deg": 150,
+      "description": "Right knee"
+    },
+    "knee_flexion_l": {
+      "torque_nm": 100,
+      "speed_rpm": 60,
+      "range_deg": 150,
+      "description": "Left knee"
+    },
+    "ankle_flexion_r": {
+      "torque_nm": 80,
+      "speed_rpm": 60,
+      "range_deg": 80,
+      "description": "Right ankle pitch"
+    },
+    "ankle_flexion_l": {
+      "torque_nm": 80,
+      "speed_rpm": 60,
+      "range_deg": 80,
+      "description": "Left ankle pitch"
+    },
+    "ankle_abduction_r": {
+      "torque_nm": 50,
+      "speed_rpm": 80,
+      "range_deg": 50,
+      "description": "Right ankle roll"
+    },
+    "ankle_abduction_l": {
+      "torque_nm": 50,
+      "speed_rpm": 80,
+      "range_deg": 50,
+      "description": "Left ankle roll"
+    },
+    "shoulder_flexion_r": {
+      "torque_nm": 45,
+      "speed_rpm": 100,
+      "range_deg": 180,
+      "description": "Right shoulder pitch"
+    },
+    "shoulder_flexion_l": {
+      "torque_nm": 45,
+      "speed_rpm": 100,
+      "range_deg": 180,
+      "description": "Left shoulder pitch"
+    },
+    "shoulder_abduction_r": {
+      "torque_nm": 45,
+      "speed_rpm": 100,
+      "range_deg": 180,
+      "description": "Right shoulder roll"
+    },
+    "shoulder_abduction_l": {
+      "torque_nm": 45,
+      "speed_rpm": 100,
+      "range_deg": 180,
+      "description": "Left shoulder roll"
+    },
+    "shoulder_rotation_r": {
+      "torque_nm": 30,
+      "speed_rpm": 120,
+      "range_deg": 180,
+      "description": "Right shoulder yaw"
+    },
+    "shoulder_rotation_l": {
+      "torque_nm": 30,
+      "speed_rpm": 120,
+      "range_deg": 180,
+      "description": "Left shoulder yaw"
+    },
+    "elbow_flexion_r": {
+      "torque_nm": 40,
+      "speed_rpm": 100,
+      "range_deg": 150,
+      "description": "Right elbow"
+    },
+    "elbow_flexion_l": {
+      "torque_nm": 40,
+      "speed_rpm": 100,
+      "range_deg": 150,
+      "description": "Left elbow"
+    },
+    "wrist_flexion_r": {
+      "torque_nm": 15,
+      "speed_rpm": 150,
+      "range_deg": 150,
+      "description": "Right wrist pitch"
+    },
+    "wrist_flexion_l": {
+      "torque_nm": 15,
+      "speed_rpm": 150,
+      "range_deg": 150,
+      "description": "Left wrist pitch"
+    },
+    "wrist_rotation_r": {
+      "torque_nm": 10,
+      "speed_rpm": 150,
+      "range_deg": 180,
+      "description": "Right wrist roll"
+    },
+    "wrist_rotation_l": {
+      "torque_nm": 10,
+      "speed_rpm": 150,
+      "range_deg": 180,
+      "description": "Left wrist roll"
+    },
+    "neck_pitch": {
+      "torque_nm": 25,
+      "speed_rpm": 120,
+      "range_deg": 90,
+      "description": "Neck pitch"
+    },
+    "neck_yaw": {
+      "torque_nm": 20,
+      "speed_rpm": 120,
+      "range_deg": 180,
+      "description": "Neck yaw"
+    },
+    "waist_pitch": {
+      "torque_nm": 70,
+      "speed_rpm": 60,
+      "range_deg": 90,
+      "description": "Torso pitch"
+    },
+    "waist_yaw": {
+      "torque_nm": 60,
+      "speed_rpm": 80,
+      "range_deg": 90,
+      "description": "Torso yaw"
+    },
+    "waist_roll": {
+      "torque_nm": 50,
+      "speed_rpm": 80,
+      "range_deg": 60,
+      "description": "Torso roll"
+    },
+    "neck_roll": {
+      "torque_nm": 15,
+      "speed_rpm": 120,
+      "range_deg": 90,
+      "description": "Neck roll"
+    }
+  },
+  "total_dof": 30,
+  "power_profile": {
+    "continuous_operation": true,
+    "peak_load_duration_s": 5,
+    "average_duty_cycle": 0.5
+  }
+}

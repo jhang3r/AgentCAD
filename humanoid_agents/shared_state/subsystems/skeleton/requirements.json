@@ -1,0 +1,825 @@
+{
+  "version": 1,
+  "timestamp": null,
+  "mass_budget_kg": 15.0,
+  "cost_budget_usd": 3000,
+  "material_primary": "aluminum_6061",
+  "manufacturing_method": "CNC_milling_and_3D_printing",
+  "safety_factor_min": 2.0,
+  "joints": [
+    {
+      "name": "hip_flexion_extension_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.85,
+        -0.1
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -120,
+        30
+      ],
+      "expected_load_n": 500,
+      "torque_requirement_nm": 80
+    },
+    {
+      "name": "hip_flexion_extension_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.85,
+        0.1
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -120,
+        30
+      ],
+      "expected_load_n": 500,
+      "torque_requirement_nm": 80
+    },
+    {
+      "name": "hip_abduction_adduction_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.85,
+        -0.1
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 400,
+      "torque_requirement_nm": 60
+    },
+    {
+      "name": "hip_abduction_adduction_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.85,
+        0.1
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 400,
+      "torque_requirement_nm": 60
+    },
+    {
+      "name": "hip_rotation_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.85,
+        -0.1
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 300,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "hip_rotation_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.85,
+        0.1
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 300,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "knee_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.45,
+        -0.1
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        0,
+        150
+      ],
+      "expected_load_n": 600,
+      "torque_requirement_nm": 100
+    },
+    {
+      "name": "knee_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.45,
+        0.1
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        0,
+        150
+      ],
+      "expected_load_n": 600,
+      "torque_requirement_nm": 100
+    },
+    {
+      "name": "ankle_pitch_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.08,
+        -0.1
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 500,
+      "torque_requirement_nm": 50
+    },
+    {
+      "name": "ankle_pitch_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.08,
+        0.1
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 500,
+      "torque_requirement_nm": 50
+    },
+    {
+      "name": "ankle_roll_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.08,
+        -0.1
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -20,
+        20
+      ],
+      "expected_load_n": 400,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "ankle_roll_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.08,
+        0.1
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -20,
+        20
+      ],
+      "expected_load_n": 400,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "shoulder_flexion_extension_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.35,
+        -0.225
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -180,
+        180
+      ],
+      "expected_load_n": 200,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "shoulder_flexion_extension_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.35,
+        0.225
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -180,
+        180
+      ],
+      "expected_load_n": 200,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "shoulder_abduction_adduction_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.35,
+        -0.225
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -180,
+        90
+      ],
+      "expected_load_n": 200,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "shoulder_abduction_adduction_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.35,
+        0.225
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -90,
+        180
+      ],
+      "expected_load_n": 200,
+      "torque_requirement_nm": 40
+    },
+    {
+      "name": "shoulder_rotation_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.35,
+        -0.225
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range_deg": [
+        -90,
+        90
+      ],
+      "expected_load_n": 150,
+      "torque_requirement_nm": 30
+    },
+    {
+      "name": "shoulder_rotation_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.35,
+        0.225
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range_deg": [
+        -90,
+        90
+      ],
+      "expected_load_n": 150,
+      "torque_requirement_nm": 30
+    },
+    {
+      "name": "elbow_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.05,
+        -0.225
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        0,
+        150
+      ],
+      "expected_load_n": 150,
+      "torque_requirement_nm": 30
+    },
+    {
+      "name": "elbow_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.05,
+        0.225
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        0,
+        150
+      ],
+      "expected_load_n": 150,
+      "torque_requirement_nm": 30
+    },
+    {
+      "name": "wrist_pitch_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.78,
+        -0.225
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -90,
+        90
+      ],
+      "expected_load_n": 100,
+      "torque_requirement_nm": 15
+    },
+    {
+      "name": "wrist_pitch_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.78,
+        0.225
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -90,
+        90
+      ],
+      "expected_load_n": 100,
+      "torque_requirement_nm": 15
+    },
+    {
+      "name": "wrist_yaw_left",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.78,
+        -0.225
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -90,
+        90
+      ],
+      "expected_load_n": 80,
+      "torque_requirement_nm": 10
+    },
+    {
+      "name": "wrist_yaw_right",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        0.78,
+        0.225
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -90,
+        90
+      ],
+      "expected_load_n": 80,
+      "torque_requirement_nm": 10
+    },
+    {
+      "name": "neck_pitch",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.55,
+        0.0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 50,
+      "torque_requirement_nm": 10
+    },
+    {
+      "name": "neck_yaw",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.55,
+        0.0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range_deg": [
+        -90,
+        90
+      ],
+      "expected_load_n": 50,
+      "torque_requirement_nm": 10
+    },
+    {
+      "name": "torso_pitch",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "axis": [
+        1,
+        0,
+        0
+      ],
+      "range_deg": [
+        -30,
+        30
+      ],
+      "expected_load_n": 300,
+      "torque_requirement_nm": 60
+    },
+    {
+      "name": "torso_yaw",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "axis": [
+        0,
+        0,
+        1
+      ],
+      "range_deg": [
+        -45,
+        45
+      ],
+      "expected_load_n": 250,
+      "torque_requirement_nm": 50
+    },
+    {
+      "name": "torso_roll",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.0,
+        0.0
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -20,
+        20
+      ],
+      "expected_load_n": 250,
+      "torque_requirement_nm": 50
+    },
+    {
+      "name": "head_roll",
+      "type": "revolute",
+      "position_m": [
+        0.0,
+        1.55,
+        0.0
+      ],
+      "axis": [
+        0,
+        1,
+        0
+      ],
+      "range_deg": [
+        -30,
+        30
+      ],
+      "expected_load_n": 40,
+      "torque_requirement_nm": 8
+    }
+  ],
+  "links": [
+    {
+      "name": "pelvis",
+      "mass_kg": 2.5,
+      "center_of_mass_m": [
+        0.0,
+        0.85,
+        0.0
+      ],
+      "dimensions_m": [
+        0.15,
+        0.2,
+        0.35
+      ]
+    },
+    {
+      "name": "torso",
+      "mass_kg": 3.0,
+      "center_of_mass_m": [
+        0.0,
+        1.2,
+        0.0
+      ],
+      "dimensions_m": [
+        0.2,
+        0.5,
+        0.45
+      ]
+    },
+    {
+      "name": "thigh_left",
+      "mass_kg": 1.5,
+      "center_of_mass_m": [
+        0.0,
+        0.65,
+        -0.1
+      ],
+      "dimensions_m": [
+        0.08,
+        0.4,
+        0.08
+      ]
+    },
+    {
+      "name": "thigh_right",
+      "mass_kg": 1.5,
+      "center_of_mass_m": [
+        0.0,
+        0.65,
+        0.1
+      ],
+      "dimensions_m": [
+        0.08,
+        0.4,
+        0.08
+      ]
+    },
+    {
+      "name": "shin_left",
+      "mass_kg": 1.2,
+      "center_of_mass_m": [
+        0.0,
+        0.27,
+        -0.1
+      ],
+      "dimensions_m": [
+        0.07,
+        0.37,
+        0.07
+      ]
+    },
+    {
+      "name": "shin_right",
+      "mass_kg": 1.2,
+      "center_of_mass_m": [
+        0.0,
+        0.27,
+        0.1
+      ],
+      "dimensions_m": [
+        0.07,
+        0.37,
+        0.07
+      ]
+    },
+    {
+      "name": "foot_left",
+      "mass_kg": 0.8,
+      "center_of_mass_m": [
+        0.05,
+        0.04,
+        -0.1
+      ],
+      "dimensions_m": [
+        0.25,
+        0.08,
+        0.1
+      ]
+    },
+    {
+      "name": "foot_right",
+      "mass_kg": 0.8,
+      "center_of_mass_m": [
+        0.05,
+        0.04,
+        0.1
+      ],
+      "dimensions_m": [
+        0.25,
+        0.08,
+        0.1
+      ]
+    },
+    {
+      "name": "upper_arm_left",
+      "mass_kg": 0.6,
+      "center_of_mass_m": [
+        0.0,
+        1.2,
+        -0.225
+      ],
+      "dimensions_m": [
+        0.06,
+        0.3,
+        0.06
+      ]
+    },
+    {
+      "name": "upper_arm_right",
+      "mass_kg": 0.6,
+      "center_of_mass_m": [
+        0.0,
+        1.2,
+        0.225
+      ],
+      "dimensions_m": [
+        0.06,
+        0.3,
+        0.06
+      ]
+    },
+    {
+      "name": "forearm_left",
+      "mass_kg": 0.5,
+      "center_of_mass_m": [
+        0.0,
+        0.915,
+        -0.225
+      ],
+      "dimensions_m": [
+        0.05,
+        0.27,
+        0.05
+      ]
+    },
+    {
+      "name": "forearm_right",
+      "mass_kg": 0.5,
+      "center_of_mass_m": [
+        0.0,
+        0.915,
+        0.225
+      ],
+      "dimensions_m": [
+        0.05,
+        0.27,
+        0.05
+      ]
+    },
+    {
+      "name": "hand_left",
+      "mass_kg": 0.3,
+      "center_of_mass_m": [
+        0.0,
+        0.72,
+        -0.225
+      ],
+      "dimensions_m": [
+        0.08,
+        0.12,
+        0.04
+      ]
+    },
+    {
+      "name": "hand_right",
+      "mass_kg": 0.3,
+      "center_of_mass_m": [
+        0.0,
+        0.72,
+        0.225
+      ],
+      "dimensions_m": [
+        0.08,
+        0.12,
+        0.04
+      ]
+    },
+    {
+      "name": "head",
+      "mass_kg": 1.0,
+      "center_of_mass_m": [
+        0.0,
+        1.65,
+        0.0
+      ],
+      "dimensions_m": [
+        0.2,
+        0.2,
+        0.2
+      ]
+    }
+  ],
+  "total_dof": 30,
+  "notes": "Skeleton design for 1.75m humanoid with 30 DOF. All positions in robot coordinate frame with origin at ground level between feet."
+}

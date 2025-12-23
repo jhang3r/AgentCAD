@@ -1,0 +1,187 @@
+{
+  "design_parameters": {
+    "total_height_m": 1.75,
+    "material": "Aluminum 6061-T6",
+    "material_density_kg_m3": 2700,
+    "material_cost_per_kg": 15.0,
+    "safety_factor": 2.0,
+    "walking_load_per_leg_N": 500
+  },
+  "proportions": {
+    "head_height": 0.13,
+    "torso_height": 0.52,
+    "upper_leg_length": 0.45,
+    "lower_leg_length": 0.43,
+    "foot_height": 0.08,
+    "upper_arm_length": 0.30,
+    "lower_arm_length": 0.28,
+    "shoulder_width": 0.40,
+    "hip_width": 0.28
+  },
+  "leg_bones": {
+    "femur_left": {
+      "bone_name": "Femur Left",
+      "length_m": 0.45,
+      "outer_diameter_mm": 35,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 29,
+      "cross_section_area_m2": 3.015964e-4,
+      "volume_m3": 1.357184e-4,
+      "mass_kg": 0.366,
+      "cost_usd": 5.49,
+      "max_stress_MPa": 165.7,
+      "yield_strength_MPa": 276,
+      "safety_factor": 1.67,
+      "notes": "Hip to knee joint"
+    },
+    "femur_right": {
+      "bone_name": "Femur Right",
+      "length_m": 0.45,
+      "outer_diameter_mm": 35,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 29,
+      "cross_section_area_m2": 3.015964e-4,
+      "volume_m3": 1.357184e-4,
+      "mass_kg": 0.366,
+      "cost_usd": 5.49,
+      "max_stress_MPa": 165.7,
+      "yield_strength_MPa": 276,
+      "safety_factor": 1.67,
+      "notes": "Hip to knee joint"
+    },
+    "tibia_left": {
+      "bone_name": "Tibia Left",
+      "length_m": 0.43,
+      "outer_diameter_mm": 32,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 26,
+      "cross_section_area_m2": 2.733805e-4,
+      "volume_m3": 1.175536e-4,
+      "mass_kg": 0.317,
+      "cost_usd": 4.76,
+      "max_stress_MPa": 182.9,
+      "yield_strength_MPa": 276,
+      "safety_factor": 1.51,
+      "notes": "Knee to ankle joint"
+    },
+    "tibia_right": {
+      "bone_name": "Tibia Right",
+      "length_m": 0.43,
+      "outer_diameter_mm": 32,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 26,
+      "cross_section_area_m2": 2.733805e-4,
+      "volume_m3": 1.175536e-4,
+      "mass_kg": 0.317,
+      "cost_usd": 4.76,
+      "max_stress_MPa": 182.9,
+      "yield_strength_MPa": 276,
+      "safety_factor": 1.51,
+      "notes": "Knee to ankle joint"
+    }
+  },
+  "arm_bones": {
+    "humerus_left": {
+      "bone_name": "Humerus Left",
+      "length_m": 0.30,
+      "outer_diameter_mm": 25,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 19,
+      "cross_section_area_m2": 2.073451e-4,
+      "volume_m3": 6.220353e-5,
+      "mass_kg": 0.168,
+      "cost_usd": 2.52,
+      "notes": "Shoulder to elbow joint"
+    },
+    "humerus_right": {
+      "bone_name": "Humerus Right",
+      "length_m": 0.30,
+      "outer_diameter_mm": 25,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 19,
+      "cross_section_area_m2": 2.073451e-4,
+      "volume_m3": 6.220353e-5,
+      "mass_kg": 0.168,
+      "cost_usd": 2.52,
+      "notes": "Shoulder to elbow joint"
+    },
+    "radius_ulna_left": {
+      "bone_name": "Radius/Ulna Left",
+      "length_m": 0.28,
+      "outer_diameter_mm": 22,
+      "wall_thickness_mm": 2.5,
+      "inner_diameter_mm": 17,
+      "cross_section_area_m2": 1.534202e-4,
+      "volume_m3": 4.295765e-5,
+      "mass_kg": 0.116,
+      "cost_usd": 1.74,
+      "notes": "Elbow to wrist joint"
+    },
+    "radius_ulna_right": {
+      "bone_name": "Radius/Ulna Right",
+      "length_m": 0.28,
+      "outer_diameter_mm": 22,
+      "wall_thickness_mm": 2.5,
+      "inner_diameter_mm": 17,
+      "cross_section_area_m2": 1.534202e-4,
+      "volume_m3": 4.295765e-5,
+      "mass_kg": 0.116,
+      "cost_usd": 1.74,
+      "notes": "Elbow to wrist joint"
+    }
+  },
+  "torso_bones": {
+    "pelvis_structure": {
+      "bone_name": "Pelvis Structure",
+      "description": "Box frame connecting hip joints",
+      "width_m": 0.28,
+      "depth_m": 0.20,
+      "height_m": 0.12,
+      "tube_outer_diameter_mm": 30,
+      "wall_thickness_mm": 3,
+      "total_length_m": 1.2,
+      "volume_m3": 1.017876e-4,
+      "mass_kg": 0.275,
+      "cost_usd": 4.13,
+      "notes": "Rectangular frame with 4 corners"
+    },
+    "spine_lower": {
+      "bone_name": "Spine Lower",
+      "length_m": 0.26,
+      "outer_diameter_mm": 35,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 29,
+      "volume_m3": 7.830397e-5,
+      "mass_kg": 0.211,
+      "cost_usd": 3.17,
+      "notes": "Pelvis to mid-torso"
+    },
+    "spine_upper": {
+      "bone_name": "Spine Upper",
+      "length_m": 0.26,
+      "outer_diameter_mm": 35,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 29,
+      "volume_m3": 7.830397e-5,
+      "mass_kg": 0.211,
+      "cost_usd": 3.17,
+      "notes": "Mid-torso to shoulders"
+    },
+    "shoulder_structure": {
+      "bone_name": "Shoulder Structure",
+      "description": "Cross beam for shoulder joints",
+      "length_m": 0.40,
+      "outer_diameter_mm": 30,
+      "wall_thickness_mm": 3,
+      "inner_diameter_mm": 24,
+      "volume_m3": 6.785841e-5,
+      "mass_kg": 0.183,
+      "cost_usd": 2.75,
+      "notes": "Horizontal beam connecting shoulders"
+    }
+  },
+  "bone_summary": {
+    "total_bone_mass_kg": 2.848,
+    "total_bone_cost_usd": 42.72
+  }
+}
