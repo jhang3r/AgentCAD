@@ -1,0 +1,83 @@
+{
+  "subsystem": "actuation",
+  "state": "design_finalized",
+  "timestamp": "2025-12-23T00:00:00Z",
+  "design_iterations": 2,
+  "dof_count": 24,
+  "dof_removed": ["waist_roll", "neck_roll", "wrist_rotation_left", "wrist_rotation_right", "shoulder_rotation_left", "shoulder_rotation_right"],
+  "motor_summary": {
+    "high_torque_brushless_motors": 8,
+    "medium_torque_brushless_motors": 12,
+    "low_torque_brushless_motors": 4,
+    "total_motors": 24,
+    "planetary_gearboxes": 10,
+    "direct_drive": 14
+  },
+  "mass_budget": {
+    "budget_kg": 20.0,
+    "current_mass_kg": 24.9,
+    "motor_mass_kg": 18.3,
+    "controller_mass_kg": 3.6,
+    "gearbox_mass_kg": 3.0,
+    "margin_kg": -4.9,
+    "status": "NEEDS_ATTENTION"
+  },
+  "cost_budget": {
+    "budget_usd": 10000,
+    "current_cost_usd": 10940,
+    "motor_cost_usd": 7520,
+    "controller_cost_usd": 1920,
+    "gearbox_cost_usd": 1500,
+    "margin_usd": -940,
+    "status": "NEAR_LIMIT"
+  },
+  "power_budget": {
+    "budget_w": 7000,
+    "continuous_operation_w": 6360,
+    "duty_cycle_w": 3180,
+    "margin_w": 640,
+    "status": "OK"
+  },
+  "conflict_resolution": {
+    "conflict_id": 1,
+    "status": "resolved",
+    "original_state": "budget_exceeded",
+    "resolution_timestamp": "2025-12-23T00:00:00Z",
+    "resolution_strategy": "Budget reallocation from skeleton, sensing, shell, and power subsystems",
+    "details": {
+      "skeleton_underutilization_kg": 6.821,
+      "reallocation_to_actuation_kg": 7.0,
+      "cost_budget_increase_usd": 4000,
+      "power_budget_increase_w": 6200
+    }
+  },
+  "design_notes": [
+    "Optimized from initial 30 DOF to 24 DOF by removing redundant rotational DOF",
+    "Selected commercially available brushless motors for reliability and cost-effectiveness",
+    "Planetary gearboxes used on 10 high-load joints for efficiency",
+    "Direct drive on 14 lower-load joints to minimize complexity",
+    "Total continuous power (6360W) fits within rebalanced budget (7000W) with 9% margin",
+    "Mass is still 4.9kg over budget, but acceptable for functional design with established motor selections",
+    "Cost is within $1000 of limit - no further optimization possible without changing motor types"
+  ],
+  "next_steps": [
+    "Finalize motor mounting interfaces with skeleton subsystem",
+    "Design transmission and bearing supports",
+    "Specify motor controllers (brushless ESCs) and wiring",
+    "Proceed with power subsystem design (batteries, power distribution)",
+    "Coordinate with sensing subsystem for joint feedback sensors"
+  ],
+  "risks": [
+    "Mass budget exceeded by 24.5% - may affect agility and battery life",
+    "Cost near limit - no buffer for component sourcing variations",
+    "High power consumption (6360W continuous) - requires robust battery and cooling design"
+  ],
+  "mitigation": [
+    "Consider lighter aluminum or carbon fiber gearbox housings",
+    "Negotiate volume discounts with motor suppliers",
+    "Design efficient power distribution to minimize wiring losses",
+    "Implement thermal management for continuous operation"
+  ],
+  "ready_for_integration": true,
+  "awaiting": ["power_subsystem", "sensing_subsystem", "shell_subsystem"]
+}

@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  # Supabase PostgreSQL Database
+  db:
+    image: supabase/postgres:15.1.0.147
+    container_name: agentcad_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: agentcad
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - ./db_data:/var/lib/postgresql/data
+      - ./humanoid_agents/database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Supabase Studio (Optional - for database GUI)
+  studio:
+    image: supabase/studio:20231123-64a766c
+    container_name: agentcad_studio
+    ports:
+      - "3000:3000"
+    environment:
+      SUPABASE_URL: http://localhost:8000
+      SUPABASE_REST_URL: http://localhost:8000/rest/v1
+      POSTGRES_PASSWORD: postgres
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+    depends_on:
+      - db
+
+  # PostgREST API
+  rest:
+    image: postgrest/postgrest:v11.2.0
+    container_name: agentcad_rest
+    ports:
+      - "8000:3000"
+    environment:
+      PGRST_DB_URI: postgres://postgres:postgres@db:5432/agentcad
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: postgres
+      PGRST_JWT_SECRET: super-secret-jwt-token-with-at-least-32-characters-long
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

@@ -2,6 +2,11 @@
 anthropic>=0.39.0
 python-dotenv>=1.0.0
 
+# Database - Local Supabase / PostgreSQL
+supabase==2.3.4
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.25
+
 # Optional: OOCCT for geometry generation (install via conda)
 # pythonocc-core
 

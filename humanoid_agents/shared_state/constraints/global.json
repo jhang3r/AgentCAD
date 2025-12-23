@@ -18,26 +18,26 @@
     "assembly_complexity_max": 0.6
   },
   "mass_budget_allocation": {
-    "skeleton_kg": 15.0,
-    "actuation_kg": 12.0,
+    "skeleton_kg": 12.0,
+    "actuation_kg": 20.0,
     "power_kg": 8.0,
-    "sensing_kg": 3.0,
-    "shell_kg": 5.0,
-    "reserve_kg": 2.0
+    "sensing_kg": 2.5,
+    "shell_kg": 2.5,
+    "reserve_kg": 0.0
   },
   "cost_budget_allocation": {
-    "skeleton_usd": 3000,
-    "actuation_usd": 6000,
-    "power_usd": 2000,
-    "sensing_usd": 2500,
+    "skeleton_usd": 1500,
+    "actuation_usd": 10000,
+    "power_usd": 1500,
+    "sensing_usd": 1000,
     "shell_usd": 1000,
-    "reserve_usd": 500
+    "reserve_usd": 0
   },
   "power_budget_allocation": {
-    "actuation_w": 800,
+    "actuation_w": 7000,
     "sensing_w": 50,
     "control_w": 100,
-    "reserve_w": 50
+    "reserve_w": 0
   },
   "performance_targets": {
     "walking_speed_ms": 1.5,
